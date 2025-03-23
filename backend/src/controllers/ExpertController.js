@@ -1,35 +1,13 @@
 const ExpertModel = require("../models/ExpertModel");
-const multer = require("multer");
-const cloudinaryUtil = require("../utils/CloudinaryUtil");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads"); // Store uploaded files in the "uploads" directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname); // Unique filename
-  },
-});
-
-const upload = multer({ storage: storage }).single("profilePic");
-
-// Create Expert Profile
-const createExpert = async (req, res) => {
-  try {
-    const expert = new ExpertModel(req.body);
-    await expert.save();
-    res
-      .status(201)
-      .json({ message: "Expert created successfully", data: expert });
-  } catch (error) {
-    res.status(500).json({ message: "Error creating expert", error });
-  }
-};
+const UserModel = require("../models/UserModel");
 
 // Get All Experts
 const getAllExperts = async (req, res) => {
   try {
-    const experts = await ExpertModel.find().populate("user", "username email");
+    const experts = await ExpertModel.find().populate(
+      "user",
+      "fullName username email profilePic"
+    );
     res
       .status(200)
       .json({ message: "Experts fetched successfully", data: experts });
@@ -41,13 +19,14 @@ const getAllExperts = async (req, res) => {
 // Get Expert by ID
 const getExpertById = async (req, res) => {
   try {
-    const expert = await ExpertModel.findById(req.params.id).populate(
-      "user",
-      "username email"
-    );
+    const expert = await ExpertModel.findById(req.params.id)
+      .populate("user", "fullName username email profilePic") // Populate user details
+      .populate("consultations.petOwner", "fullName email"); // Populate pet owner details
+
     if (!expert) {
       return res.status(404).json({ message: "Expert not found" });
     }
+
     res
       .status(200)
       .json({ message: "Expert fetched successfully", data: expert });
@@ -56,14 +35,44 @@ const getExpertById = async (req, res) => {
   }
 };
 
+//get expert consultation
+const getExpertConsultations = async (req, res) => {
+  try {
+    const expert = await ExpertModel.findOne({ user: req.params.id }).populate(
+      "consultations.petOwner",
+      "fullName email"
+    );
+
+    if (!expert) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Consultations fetched", data: expert.consultations });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching consultations", error });
+  }
+};
+
+module.exports = {
+  getExpertConsultations,
+};
+
 // Request a Consultation
 const requestConsultation = async (req, res) => {
   try {
     const { expertId, petOwnerId, petDetails, issue } = req.body;
 
+    // Check if pet owner exists
+    const petOwner = await UserModel.findById(petOwnerId);
+    if (!petOwner)
+      return res.status(404).json({ message: "Pet owner not found" });
+
     const expert = await ExpertModel.findById(expertId);
     if (!expert) return res.status(404).json({ message: "Expert not found" });
 
+    // Add consultation request
     expert.consultations.push({ petOwner: petOwnerId, petDetails, issue });
     await expert.save();
 
@@ -76,21 +85,24 @@ const requestConsultation = async (req, res) => {
 // Accept or Decline a Consultation
 const respondToConsultation = async (req, res) => {
   try {
-    const { expertId, consultationId, status, appointmentDate } = req.body;
+    const { consultationId, status, appointmentDate } = req.body;
 
-    const expert = await ExpertModel.findById(expertId);
-    if (!expert) return res.status(404).json({ message: "Expert not found" });
+    const updatedExpert = await ExpertModel.findOneAndUpdate(
+      { "consultations._id": consultationId },
+      {
+        $set: {
+          "consultations.$.status": status,
+          ...(status === "Accepted" && {
+            "consultations.$.appointmentDate": appointmentDate,
+          }),
+        },
+      },
+      { new: true }
+    );
 
-    const consultation = expert.consultations.id(consultationId);
-    if (!consultation)
+    if (!updatedExpert)
       return res.status(404).json({ message: "Consultation not found" });
 
-    consultation.status = status;
-    if (status === "Accepted") {
-      consultation.appointmentDate = appointmentDate;
-    }
-
-    await expert.save();
     res
       .status(200)
       .json({ message: `Consultation ${status.toLowerCase()} successfully` });
@@ -102,9 +114,9 @@ const respondToConsultation = async (req, res) => {
 };
 
 module.exports = {
-  createExpert,
   getAllExperts,
   getExpertById,
+  getExpertConsultations,
   requestConsultation,
   respondToConsultation,
 };

@@ -15,9 +15,12 @@ import PrivateRoutes from "./hooks/PrivateRoutes";
 import ProfilePage from "./pages/profile/ProfilePage";
 import EditProfile from "./pages/profile/EditProfile";
 import FullPostView from "./pages/profile/FullPostView";
+
 import ExpertDashboard from "./pages/expertPages/ExpertDashboard";
 import ExpertProfile from "./pages/expertPages/ExpertProfile";
 import EditExpertProfile from "./pages/expertPages/EditExpertProfile";
+import FullPostExpert from "./pages/expertPages/FullPostExpert";
+import ConsultationsPage from "./pages/expertPages/ConsultationsPage";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -43,8 +46,8 @@ function App() {
             <Route path="feeds" element={<FeedPage />} />
             <Route path="profile" element={<ExpertProfile />} />
             <Route path="profile/edit" element={<EditExpertProfile />} />
-            {/* <Route path="profile/:id" element={<FullPostView />} /> */}
-            {/* <Route path="consultations" element={<ConsultationsPage />} /> */}
+            <Route path="profile/:id" element={<FullPostExpert />} />
+            <Route path="consultations" element={<ConsultationsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
             {/* <Route path="profile" element={<ExpertProfile />} /> */}
           </Route>

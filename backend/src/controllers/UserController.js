@@ -5,6 +5,7 @@ const mailUtil = require("../utils/MailUtil");
 
 const multer = require("multer");
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
+const ExpertModel = require("../models/ExpertModel");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -47,10 +48,22 @@ const signup = async (req, res) => {
       email,
       password: hashedPassword,
       role: role || "petOwner",
-      ...(role === "expert" && {
-        expertise,
-      }),
     });
+
+    //  If role is "expert", create an Expert Profile and link it
+    if (role === "expert") {
+      if (!expertise) {
+        return res.status(400).json({ message: "expertise is required" });
+      }
+
+      const newExpert = new ExpertModel({
+        user: newUser._id,
+        expertise,
+      });
+
+      const savedExpert = await newExpert.save();
+      newUser.expertProfile = savedExpert._id; // Link expert profile to user
+    }
 
     const savedUser = await newUser.save();
     await mailUtil.sendingMail(
@@ -79,7 +92,7 @@ const loginUser = async (req, res) => {
 
   try {
     // Find user by email
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email }).populate("expertProfile");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -98,7 +111,7 @@ const loginUser = async (req, res) => {
       message: "Login successful",
       data: userData,
       requiresCertificateUpload:
-        user.role === "expert" && !user.expertiseCertificate,
+        user.role === "expert" && !user.expertProfile?.expertiseCertificate,
     });
   } catch (error) {
     console.error(error);
@@ -109,7 +122,13 @@ const loginUser = async (req, res) => {
 //get all users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find().select("-password").populate("pets"); // Exclude password field
+    const users = await UserModel.find()
+      .select("-password")
+      .populate("pets")
+      .populate(
+        "expertProfile",
+        "expertise bio expertiseCertificate isVerified consultations"
+      ); // Exclude password field
     res.status(200).json({
       message: "Users fetched successfully",
       data: users,
@@ -124,7 +143,11 @@ const getUserById = async (req, res) => {
   try {
     const user = await UserModel.findById(req.params.id)
       .select("-password")
-      .populate("pets"); // Exclude password field
+      .populate("pets")
+      .populate(
+        "expertProfile",
+        "expertise bio expertiseCertificate isVerified consultations"
+      ); // Exclude password field
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -145,12 +168,12 @@ const updateProfile = async (req, res) => {
 
     try {
       console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
+      console.log("Uploaded Files:", req.files);
 
       const { fullName, bio, expertise } = req.body;
       const updateData = { fullName, bio, expertise };
 
-      // ✅ Upload Profile Pic to Cloudinary
+      // ✅ Upload Profile Picture
       if (req.files?.profilePic) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
           req.files.profilePic[0]
@@ -158,12 +181,13 @@ const updateProfile = async (req, res) => {
         updateData.profilePic = cloudinaryResponse.secure_url;
       }
 
-      // ✅ Upload Expertise Certificate to Cloudinary
+      // ✅ Upload Expertise Certificate (Only for Experts)
+      let certificateUrl = "";
       if (req.files?.expertiseCertificate) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
           req.files.expertiseCertificate[0]
         );
-        updateData.expertiseCertificate = cloudinaryResponse.secure_url;
+        certificateUrl = cloudinaryResponse.secure_url;
       }
 
       // ✅ Ensure at least one field is updated
@@ -171,22 +195,38 @@ const updateProfile = async (req, res) => {
         !fullName &&
         !bio &&
         !expertise &&
-        !req.files.profilePic &&
-        !req.files.expertiseCertificate
+        !req.files?.profilePic &&
+        !req.files?.expertiseCertificate
       ) {
         return res
           .status(400)
           .json({ message: "At least one field must be updated" });
       }
 
-      // ✅ Update user in database
+      // ✅ Update User Profile
       const updatedUser = await UserModel.findByIdAndUpdate(
         req.params.id,
         updateData,
         { new: true }
-      );
+      ).populate("expertProfile");
+
       if (!updatedUser)
         return res.status(404).json({ message: "User not found" });
+
+      // ✅ Update Expert Profile (Only If User is an Expert)
+      if (updatedUser.role === "expert" && certificateUrl) {
+        const updatedExpert = await ExpertModel.findOneAndUpdate(
+          { user: req.params.id },
+          { expertiseCertificate: certificateUrl },
+          { new: true }
+        );
+
+        if (!updatedExpert)
+          return res.status(404).json({ message: "Expert profile not found" });
+
+        // Add updated expert profile details to the response
+        updatedUser.expertProfile = updatedExpert;
+      }
 
       res
         .status(200)

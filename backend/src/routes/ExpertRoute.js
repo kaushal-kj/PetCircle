@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createExpert,
   getAllExperts,
   getExpertById,
+  getExpertConsultations,
   requestConsultation,
   respondToConsultation,
 } = require("../controllers/ExpertController");
 
-router.post("/expert", createExpert);
 router.get("/experts", getAllExperts);
 router.get("/expert/:id", getExpertById);
+router.get("/expert/:id/consultations", getExpertConsultations);
 
 // New routes
 router.post("/consultation/request", requestConsultation);

@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const FullPostView = () => {
+const FullPostExpert = () => {
   const { state: post } = useLocation();
   const navigate = useNavigate();
 
@@ -20,12 +20,12 @@ const FullPostView = () => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96 ">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold mb-2">{post.caption}</h2>
         <img
           src={post.photos[0]}
           alt="Post"
-          className="w-full h-[500px] rounded-md mb-4"
+          className="w-full  h-[500px] rounded-md mb-4"
         />
         <div className="flex justify-between">
           <button
@@ -46,4 +46,4 @@ const FullPostView = () => {
   );
 };
 
-export default FullPostView;
+export default FullPostExpert;

@@ -19,8 +19,11 @@ const userSchema = new mongoose.Schema(
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
     // 🔹 Fields for "Expert" Role
-    expertise: { type: String },
-    expertiseCertificate: { type: String, default: "" }, // Cloudinary file URL
+    // expertise: { type: String },
+    // expertiseCertificate: { type: String, default: "" }, // Cloudinary file URL
+
+    //  Link to Expert Profile (if user is an expert)
+    expertProfile: { type: mongoose.Schema.Types.ObjectId, ref: "Expert" },
   },
   { timestamps: true }
 );

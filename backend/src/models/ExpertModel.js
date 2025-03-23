@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
 
 const expertSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  specialization: { type: String, required: true },
-  bio: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  certificate: { type: String }, // Cloudinary URL for certificate upload
+  expertise: { type: String, required: true },
+  bio: { type: String },
+  expertiseCertificate: { type: String, default: "" }, // Cloudinary URL for certificate upload
   isVerified: { type: Boolean, default: false }, // Admin verification
   consultations: [
     {
