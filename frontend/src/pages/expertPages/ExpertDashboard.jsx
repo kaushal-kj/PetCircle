@@ -1,22 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
-  FaHome,
-  FaPaw,
-  FaUsers,
-  FaHandHoldingHeart,
-  FaUserMd,
-  FaTrophy,
-} from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
+import { FaHome, FaUserMd, FaUsers, FaClipboardList } from "react-icons/fa";
 import { MdGridOn } from "react-icons/md";
+import { FiLogOut } from "react-icons/fi";
 
-const MainPage = () => {
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+const ExpertDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isMainPage = location.pathname === "/main";
+  const isDashboard = location.pathname === "/expert";
 
   const handleLogout = () => {
     // ✅ Clear user session
@@ -29,16 +21,13 @@ const MainPage = () => {
     // ✅ Redirect to login page
     navigate("/login");
   };
-
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div
-        className={`bg-gray-900 min-h-screen fixed text-white w-64 p-4 transform transition-transform duration-200 ease-in-out `}
-      >
+      <div className="bg-gray-900 text-white w-64 p-4 fixed min-h-screen">
         <h2 className="text-2xl font-bold mb-6">PetCircle</h2>
         <nav>
-          <ul className="space-y-2">
+          <ul className="space-y-4">
             <li>
               <Link
                 to="feeds"
@@ -49,10 +38,10 @@ const MainPage = () => {
             </li>
             <li>
               <Link
-                to="pets"
+                to="consultations"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaPaw className="mr-2" /> My Pets
+                <FaClipboardList className="mr-2" /> Consultations
               </Link>
             </li>
             <li>
@@ -61,30 +50,6 @@ const MainPage = () => {
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
                 <FaUsers className="mr-2" /> Communities
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="adoptions"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaHandHoldingHeart className="mr-2" /> Adoptions
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="experts"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaUserMd className="mr-2" /> Experts
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="contests"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaTrophy className="mr-2" /> Contests
               </Link>
             </li>
             <li>
@@ -108,13 +73,13 @@ const MainPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 ml-60">
-        {isMainPage ? (
+      <div className="flex-1 p-8 ml-64">
+        {isDashboard ? (
           <>
-            {" "}
-            <h1 className="text-3xl font-bold mb-6">Welcome to PetCircle!</h1>
+            <h1 className="text-3xl font-bold mb-6">Welcome, Expert!</h1>
             <p className="text-lg text-gray-700">
-              Your go-to platform for all things pets.
+              Manage consultations, interact with communities, and share your
+              expertise.
             </p>
           </>
         ) : (
@@ -125,4 +90,4 @@ const MainPage = () => {
   );
 };
 
-export default MainPage;
+export default ExpertDashboard;

@@ -148,7 +148,6 @@ const addPetWithFile = async (req, res) => {
     }
   });
 };
-
 module.exports = {
   createPet,
   getPetById,

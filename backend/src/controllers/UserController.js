@@ -6,12 +6,24 @@ const mailUtil = require("../utils/MailUtil");
 const multer = require("multer");
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
 
-const upload = multer({ storage: multer.memoryStorage() }).single("profilePic");
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads"); // Store uploaded files in the "uploads" directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname); // Unique filename
+  },
+});
+
+const upload = multer({ storage: storage }).fields([
+  { name: "profilePic", maxCount: 1 },
+  { name: "expertiseCertificate", maxCount: 1 },
+]);
 
 const signup = async (req, res) => {
   try {
     // console.log("Request Body:", req.body);
-    const { fullName, username, email, password, role } = req.body;
+    const { fullName, username, email, password, role, expertise } = req.body;
 
     // Check if fullName is provided
     if (!fullName) {
@@ -35,6 +47,9 @@ const signup = async (req, res) => {
       email,
       password: hashedPassword,
       role: role || "petOwner",
+      ...(role === "expert" && {
+        expertise,
+      }),
     });
 
     const savedUser = await newUser.save();
@@ -82,6 +97,8 @@ const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       data: userData,
+      requiresCertificateUpload:
+        user.role === "expert" && !user.expertiseCertificate,
     });
   } catch (error) {
     console.error(error);
@@ -121,39 +138,6 @@ const getUserById = async (req, res) => {
 };
 
 //update profile pic
-// const updateProfile = async (req, res) => {
-//   upload(req, res, async (err) => {
-//     if (err) return res.status(500).json({ message: err.message });
-
-//     try {
-//       const { fullName, bio } = req.body;
-//       const updateData = { fullName, bio };
-
-//       // If an image is uploaded, upload it to Cloudinary
-//       if (req.file) {
-//         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
-//           req.file
-//         );
-//         updateData.profilePic = cloudinaryResponse.secure_url;
-//       }
-
-//       const updatedUser = await UserModel.findByIdAndUpdate(
-//         req.params.id,
-//         updateData,
-//         { new: true }
-//       );
-//       if (!updatedUser)
-//         return res.status(404).json({ message: "User not found" });
-
-//       res
-//         .status(200)
-//         .json({ message: "Profile updated successfully", data: updatedUser });
-//     } catch (error) {
-//       res.status(500).json({ message: "Error updating profile", error });
-//     }
-//   });
-// };
-
 const updateProfile = async (req, res) => {
   upload(req, res, async (err) => {
     if (err)
@@ -161,23 +145,35 @@ const updateProfile = async (req, res) => {
 
     try {
       console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file); // Check if file is received
+      console.log("Uploaded File:", req.file);
 
-      const { fullName, bio } = req.body;
-      const updateData = { fullName, bio };
+      const { fullName, bio, expertise } = req.body;
+      const updateData = { fullName, bio, expertise };
 
-      // ✅ Upload image to Cloudinary only if a file is present
-      if (req.file) {
+      // ✅ Upload Profile Pic to Cloudinary
+      if (req.files?.profilePic) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
-          req.file.buffer
+          req.files.profilePic[0]
         );
         updateData.profilePic = cloudinaryResponse.secure_url;
-      } else {
-        console.log(" No file uploaded");
+      }
+
+      // ✅ Upload Expertise Certificate to Cloudinary
+      if (req.files?.expertiseCertificate) {
+        const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
+          req.files.expertiseCertificate[0]
+        );
+        updateData.expertiseCertificate = cloudinaryResponse.secure_url;
       }
 
       // ✅ Ensure at least one field is updated
-      if (!fullName && !bio && !req.file) {
+      if (
+        !fullName &&
+        !bio &&
+        !expertise &&
+        !req.files.profilePic &&
+        !req.files.expertiseCertificate
+      ) {
         return res
           .status(400)
           .json({ message: "At least one field must be updated" });
@@ -201,6 +197,7 @@ const updateProfile = async (req, res) => {
     }
   });
 };
+
 module.exports = {
   signup,
   loginUser,

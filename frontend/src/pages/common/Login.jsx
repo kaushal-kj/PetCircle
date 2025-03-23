@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify"; // Import Toast
+import { Slide, toast, ToastContainer } from "react-toastify"; // Import Toast
 import "react-toastify/dist/ReactToastify.css"; // Import Toast CSS
 import axios from "axios";
 
@@ -20,19 +20,53 @@ const Login = () => {
       const response = await axios.post("/user/login", data);
       if (response.status === 200) {
         // console.log(response.data);
-        toast.success("Login Successful! Redirecting to Main Page...");
+        // toast.success("Login Successful! Redirecting to Main Page...");
+        toast.success("Login Successful! ", {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
         localStorage.setItem("id", response.data.data._id);
+        localStorage.setItem("username", response.data.data.username);
+        localStorage.setItem(
+          "profilePic",
+          response.data.data.profilePic || "https://via.placeholder.com/50"
+        );
+
         localStorage.setItem("role", response.data.data.role);
         localStorage.setItem("email", response.data.data.email);
-        if (response.data.data.role === "petOwner") {
-          setTimeout(() => {
+        setTimeout(() => {
+          if (response.data.data.role === "petOwner") {
             navigate("/main/feeds");
-          }, 2000);
-        }
+          } else if (response.data.data.role === "expert") {
+            if (response.data.requiresCertificateUpload) {
+              navigate("/expert/profile");
+            } else {
+              navigate("/expert/feeds");
+            }
+          }
+        }, 2000);
       }
     } catch (error) {
       if (error.response) {
-        toast.error(error.response.data.message || "Login Failed");
+        // toast.error(error.response.data.message || "Login Failed");
+        toast.error(error.response.data.message || "Login Failed", {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
       } else {
         toast.error("Something went wrong");
       }
@@ -59,7 +93,19 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <ToastContainer /> {/* Add ToastContainer */}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Slide}
+      />
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-800">
@@ -117,7 +163,7 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="group cursor-pointer relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               Login
             </button>

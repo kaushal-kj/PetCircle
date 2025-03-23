@@ -1,8 +1,9 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify"; // Import Toast
-import "react-toastify/dist/ReactToastify.css"; // Import Toast CSS
+import { Slide, toast, ToastContainer } from "react-toastify";
+import { FaChevronDown } from "react-icons/fa"; // Dropdown icon
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const SignUp = () => {
@@ -12,36 +13,12 @@ const SignUp = () => {
     formState: { errors },
     watch,
   } = useForm();
-
   const navigate = useNavigate();
+  const selectedRole = watch("role"); // Watch role selection
 
-  // Custom validation for password confirmation
-  const validatePasswordMatch = (value) => {
-    const password = watch("password");
-    return value === password || "Passwords do not match";
-  };
-
-  // Handle form submission
-  const onSubmit = async (data) => {
-    try {
-      const response = await axios.post("/user/signup", data);
-      if (response.status === 201) {
-        toast.success("Sign Up Successful! Redirecting to Login...");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-      }
-    } catch (error) {
-      if (error.response) {
-        toast.error(error.response.data.message || "Sign Up Failed");
-      } else {
-        toast.error("Something went wrong");
-      }
-    }
-  };
-
-  // Validation rules
+  // ✅ Validation Rules
   const validationRules = {
+    role: { required: "Role is required" },
     username: {
       required: "Username is required",
       minLength: {
@@ -49,26 +26,12 @@ const SignUp = () => {
         message: "Username must be at least 3 characters",
       },
     },
+    fullName: { required: "Full Name is required" },
     email: {
       required: "Email is required",
       pattern: {
         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
         message: "Invalid email address",
-      },
-    },
-    phoneNumber: {
-      required: "Phone Number is required",
-      pattern: {
-        value: /^[0-9]{10}$/,
-        message: "Phone Number must be 10 digits",
-      },
-    },
-    dateOfBirth: {
-      required: "Date of Birth is required",
-      validate: (value) => {
-        const dob = new Date(value);
-        const today = new Date();
-        return dob < today || "Date of Birth must be in the past";
       },
     },
     password: {
@@ -80,19 +43,94 @@ const SignUp = () => {
     },
     confirmPassword: {
       required: "Confirm Password is required",
-      validate: validatePasswordMatch, // Custom validation
+      validate: (value) =>
+        value === watch("password") || "Passwords do not match",
     },
-    role: {
-      required: "Role is required",
-    },
-    terms: {
-      required: "You must accept the terms and conditions",
-    },
+    phoneNumber:
+      selectedRole === "petOwner"
+        ? {
+            required: "Phone Number is required",
+            pattern: {
+              value: /^[0-9]{10}$/,
+              message: "Phone Number must be 10 digits",
+            },
+          }
+        : {},
+
+    dateOfBirth:
+      selectedRole === "petOwner"
+        ? { required: "Date of Birth is required" }
+        : {},
+
+    expertise:
+      selectedRole === "expert"
+        ? { required: "Expertise field is required" }
+        : {},
+
+    terms: { required: "You must accept the terms and conditions" },
+  };
+
+  // ✅ Handle Form Submission
+  const onSubmit = async (data) => {
+    // Show toast immediately
+    toast.info("Signing Up... Please wait!", {
+      position: "top-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "dark",
+      transition: Slide,
+    });
+    try {
+      const response = await axios.post("/user/signup", data);
+      if (response.status === 201) {
+        // toast.success("Sign Up Successful! Redirecting to Login...");
+        toast.success("Sign Up Successful! ", {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
+        setTimeout(() => navigate("/login"), 2000);
+      }
+    } catch (error) {
+      // toast.error(error.response?.data?.message || "Sign Up Failed");
+      toast.error(error.response?.data?.message || "Sign Up Failed", {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Slide,
+      });
+    }
   };
 
   return (
     <div className="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <ToastContainer /> {/* Add ToastContainer */}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Slide}
+      />
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-800">
@@ -105,158 +143,25 @@ const SignUp = () => {
             </Link>
           </p>
         </div>
+
+        {/* Form Start */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md shadow-sm space-y-4">
-            {/* Username */}
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                {...register("username", validationRules.username)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Username"
-              />
-              {errors.username && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.username.message}
-                </p>
-              )}
-            </div>
-
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="sr-only">
-                Full Name
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                {...register("fullName", validationRules.fullName)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Full Name"
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.fullName.message}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                {...register("email", validationRules.email)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Email Address"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label htmlFor="phoneNumber" className="sr-only">
-                Phone Number
-              </label>
-              <input
-                id="phoneNumber"
-                type="tel"
-                {...register("phoneNumber", validationRules.phoneNumber)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Phone Number"
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.phoneNumber.message}
-                </p>
-              )}
-            </div>
-
-            {/* Date of Birth */}
-            <div>
-              <label htmlFor="dateOfBirth" className="sr-only">
-                Date of Birth
-              </label>
-              <input
-                id="dateOfBirth"
-                type="date"
-                {...register("dateOfBirth", validationRules.dateOfBirth)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-              />
-              {errors.dateOfBirth && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.dateOfBirth.message}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                {...register("password", validationRules.password)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Password"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                {...register(
-                  "confirmPassword",
-                  validationRules.confirmPassword
-                )}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Confirm Password"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
             {/* Role Dropdown */}
-            <div>
+            <div className="relative">
               <label htmlFor="role" className="sr-only">
                 Role
               </label>
               <select
                 id="role"
                 {...register("role", validationRules.role)}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
               >
                 <option value="">Select Role</option>
-                <option value="admin">Admin</option>
                 <option value="petOwner">Pet Owner</option>
                 <option value="expert">Expert</option>
               </select>
+              <FaChevronDown className="absolute right-3 top-3 text-gray-500" />
               {errors.role && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.role.message}
@@ -264,41 +169,93 @@ const SignUp = () => {
               )}
             </div>
 
-            {/* Terms and Conditions */}
-            <div>
-              <label className="inline-flex items-center">
+            {/* Common Fields for All Roles */}
+            <input
+              type="text"
+              {...register("username", validationRules.username)}
+              placeholder="Username"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
+            <input
+              type="text"
+              {...register("fullName", validationRules.fullName)}
+              placeholder="Full Name"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
+            <input
+              type="email"
+              {...register("email", validationRules.email)}
+              placeholder="Email Address"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
+            <input
+              type="password"
+              {...register("password", validationRules.password)}
+              placeholder="Password"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
+            <input
+              type="password"
+              {...register("confirmPassword", validationRules.confirmPassword)}
+              placeholder="Confirm Password"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
+
+            {/* Pet Owner Fields */}
+            {selectedRole === "petOwner" && (
+              <>
                 <input
-                  type="checkbox"
-                  {...register("terms", validationRules.terms)}
-                  className="form-checkbox h-4 w-4 text-green-600"
+                  type="tel"
+                  {...register("phoneNumber", validationRules.phoneNumber)}
+                  placeholder="Phone Number"
+                  className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
                 />
-                <span className="ml-2 text-gray-700">
-                  I agree to the{" "}
-                  <a
-                    href="/terms"
-                    className="text-green-600 hover:text-green-500"
-                  >
-                    Terms and Conditions
-                  </a>
-                </span>
-              </label>
-              {errors.terms && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.terms.message}
-                </p>
-              )}
-            </div>
+                <input
+                  type="date"
+                  {...register("dateOfBirth", validationRules.dateOfBirth)}
+                  className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+                />
+              </>
+            )}
+
+            {/* Expert Fields */}
+            {selectedRole === "expert" && (
+              <>
+                <input
+                  type="text"
+                  {...register("expertise", validationRules.expertise)}
+                  placeholder="Expertise Field"
+                  className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+                />
+              </>
+            )}
           </div>
 
-          {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              Sign Up
-            </button>
+          {/* ✅ Terms and Conditions */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              {...register("terms", validationRules.terms)}
+              className="h-4 w-4 text-green-600"
+            />
+            <span className="text-gray-700 text-sm">
+              I agree to the{" "}
+              <a href="/terms" className="text-green-600 hover:text-green-500">
+                Terms and Conditions
+              </a>
+            </span>
           </div>
+          {errors.terms && (
+            <p className="text-red-500 text-sm mt-1">{errors.terms.message}</p>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-green-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Sign Up
+          </button>
         </form>
       </div>
     </div>
