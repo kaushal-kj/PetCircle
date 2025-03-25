@@ -55,10 +55,6 @@ const getExpertConsultations = async (req, res) => {
   }
 };
 
-module.exports = {
-  getExpertConsultations,
-};
-
 // Request a Consultation
 const requestConsultation = async (req, res) => {
   try {
@@ -113,10 +109,40 @@ const respondToConsultation = async (req, res) => {
   }
 };
 
+//delete declined consultation
+const deleteConsultation = async (req, res) => {
+  try {
+    const { expertId, consultationId } = req.params;
+
+    // Find the expert
+    const expert = await ExpertModel.findById(expertId);
+    if (!expert) return res.status(404).json({ message: "Expert not found" });
+
+    // Find the consultation inside the expert's consultations array
+    const consultationIndex = expert.consultations.findIndex(
+      (c) => c._id.toString() === consultationId
+    );
+
+    if (consultationIndex === -1) {
+      return res.status(404).json({ message: "Consultation not found" });
+    }
+
+    // Remove the consultation from the array
+    expert.consultations.splice(consultationIndex, 1);
+    await expert.save();
+
+    res.status(200).json({ message: "Consultation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting consultation:", error);
+    res.status(500).json({ message: "Error deleting consultation", error });
+  }
+};
+
 module.exports = {
   getAllExperts,
   getExpertById,
   getExpertConsultations,
   requestConsultation,
   respondToConsultation,
+  deleteConsultation,
 };

@@ -21,6 +21,8 @@ import ExpertProfile from "./pages/expertPages/ExpertProfile";
 import EditExpertProfile from "./pages/expertPages/EditExpertProfile";
 import FullPostExpert from "./pages/expertPages/FullPostExpert";
 import ConsultationsPage from "./pages/expertPages/ConsultationsPage";
+import ResetPassword from "./pages/common/ResetPassword";
+import ForgotPassword from "./pages/common/ForgotPassword";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -30,7 +32,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-pass" element={<ForgotPassword />} />
+        <Route path="/resetpassword/:token" element={<ResetPassword />} />
+
         <Route path="" element={<PrivateRoutes />}>
+          //petowner routes
           <Route path="/main" element={<MainPage />}>
             <Route path="feeds" element={<FeedPage />} />
             <Route path="pets" element={<PetsPage />} />
@@ -42,6 +48,7 @@ function App() {
             <Route path="profile/edit" element={<EditProfile />} />
             <Route path="profile/:id" element={<FullPostView />} />
           </Route>
+          //expert routes
           <Route path="/expert" element={<ExpertDashboard />}>
             <Route path="feeds" element={<FeedPage />} />
             <Route path="profile" element={<ExpertProfile />} />
@@ -49,7 +56,6 @@ function App() {
             <Route path="profile/:id" element={<FullPostExpert />} />
             <Route path="consultations" element={<ConsultationsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
-            {/* <Route path="profile" element={<ExpertProfile />} /> */}
           </Route>
         </Route>
       </Routes>

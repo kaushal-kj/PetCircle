@@ -6,6 +6,9 @@ const mailUtil = require("../utils/MailUtil");
 const multer = require("multer");
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
 const ExpertModel = require("../models/ExpertModel");
+//using jwt for forgot password
+const jwt = require("jsonwebtoken");
+const secret = "secret";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -238,10 +241,149 @@ const updateProfile = async (req, res) => {
   });
 };
 
+//forget password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const foundUser = await userModel.findOne({ email });
+
+    if (!foundUser) {
+      return res
+        .status(404)
+        .json({ message: "User not found, please register first." });
+    }
+
+    // Generate a token with user ID and email only (avoid sending the full user object)
+    const token = jwt.sign(
+      { _id: foundUser._id, email: foundUser.email },
+      secret,
+      { expiresIn: "1h" }
+    );
+
+    console.log(token);
+
+    const url = `http://localhost:5173/resetpassword/${token}`;
+    const mailContent = `<html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+          }
+          .container {
+            max-width: 600px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+          }
+          .message {
+            font-size: 16px;
+            color: #555;
+            margin-top: 10px;
+          }
+          .button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+          }
+          .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">Password Reset Request</div>
+          <p class="message">
+            Hello ${foundUser.email},<br><br>
+            We received a request to reset your password. Click the button below to set a new password:
+          </p>
+          <a href="${url}" class="button">Reset Password</a>
+          <p class="message">
+            If you did not request a password reset, please ignore this email. This link is valid for 1 hour.
+          </p>
+          <div class="footer">
+            &copy; ${new Date().getFullYear()} PetCircle | All rights reserved.
+          </div>
+        </div>
+      </body>
+      </html>`;
+
+    // Send email
+    await mailUtil.sendingMail(foundUser.email, "Reset Password", mailContent);
+
+    res.json({ message: "Reset password link sent to email." });
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+//reset password
+const resetpassword = async (req, res) => {
+  try {
+    const { token, password: newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Token and password are required." });
+    }
+
+    // Verify token
+    const userFromToken = jwt.verify(token, secret);
+
+    // Hash new password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+
+    // Update user password in the database
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userFromToken._id,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   signup,
   loginUser,
   getAllUsers,
   getUserById,
   updateProfile,
+  forgotPassword,
+  resetpassword,
 };
