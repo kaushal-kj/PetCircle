@@ -8,6 +8,8 @@ const ProfilePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const userId = localStorage.getItem("id");
   const navigate = useNavigate();
 
@@ -30,10 +32,12 @@ const ProfilePage = () => {
     }
   }, [userId]);
 
-  // ✅ Handle Adding a New Post
+  //  Handle Adding a New Post
   const handleAddPost = async (event) => {
     event.preventDefault();
     if (!caption || !image) return alert("Caption and image are required!");
+
+    setLoading(true); // Start loading
 
     const formData = new FormData();
     formData.append("caption", caption);
@@ -51,10 +55,12 @@ const ProfilePage = () => {
       setShowModal(false); // Close the modal
     } catch (error) {
       console.error("Error creating post:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
-  // ✅ Handle Viewing Full Post
+  //  Handle Viewing Full Post
   const handleViewPost = (post) => {
     navigate(`${post._id}`, { state: post });
   };
@@ -98,15 +104,15 @@ const ProfilePage = () => {
         </button>
       </div>
 
-      {/* ✅ Create Post Button (Opens Modal) */}
+      {/*  Create Post Button (Opens Modal) */}
       <button
         onClick={() => setShowModal(true)}
         className="bg-green-600 text-white px-4 py-2 rounded mt-6 hover:bg-green-700"
       >
-        ➕ Create Post
+        Create Post
       </button>
 
-      {/* ✅ Post Creation Modal */}
+      {/*  Post Creation Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -137,7 +143,7 @@ const ProfilePage = () => {
                   type="submit"
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >
-                  Post
+                  {loading ? "posting..." : "Post"}
                 </button>
               </div>
             </form>

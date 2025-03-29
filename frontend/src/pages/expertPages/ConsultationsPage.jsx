@@ -61,20 +61,49 @@ const ConsultationsPage = () => {
   //     console.error("Error declining consultation:", error);
   //   }
   // };
+  // const handleDecline = async (consultationId) => {
+  //   try {
+  //     if (!expertId) {
+  //       console.error("Expert ID is missing");
+  //       return;
+  //     }
+  //     console.log("Expert ID before delete request:", expertId);
+  //     // Make sure the request URL matches the backend route
+  //     const response = await axios.delete(
+  //       `/consultation/${expertId}/${consultationId}`
+  //     );
+
+  //     if (response.status === 200) {
+  //       // ✅ Remove the consultation from the UI
+  //       setConsultations((prev) =>
+  //         prev.filter((c) => c._id !== consultationId)
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error(
+  //       "Error declining consultation:",
+  //       error.response?.data || error.message
+  //     );
+  //   }
+  // };
   const handleDecline = async (consultationId) => {
     try {
-      if (!expertId) {
-        console.error("Expert ID is missing");
+      const userId = localStorage.getItem("id"); // Get user ID
+      const userData = await axios.get(`/user/${userId}`); // Fetch user details
+      const expertProfileId = userData.data?.data?.expertProfile?._id; // Get expert profile ID
+
+      if (!expertProfileId) {
+        console.error("Expert Profile ID not found");
         return;
       }
-      console.log("Expert ID before delete request:", expertId);
-      // Make sure the request URL matches the backend route
+
+      console.log("Expert Profile ID:", expertProfileId);
+
       const response = await axios.delete(
-        `/consultation/${expertId}/${consultationId}`
+        `/consultation/${expertProfileId}/${consultationId}`
       );
 
       if (response.status === 200) {
-        // ✅ Remove the consultation from the UI
         setConsultations((prev) =>
           prev.filter((c) => c._id !== consultationId)
         );

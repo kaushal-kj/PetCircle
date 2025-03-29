@@ -11,6 +11,8 @@ const PetsPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentPet, setCurrentPet] = useState(null);
   const [previewImage, setPreviewImage] = useState(DEFAULT_PHOTO); // Preview selected image
+  const [loading, setLoading] = useState(true); // Loader for fetching pets
+  const [submitting, setSubmitting] = useState(false); // Loader for form submission
 
   const {
     register,
@@ -20,13 +22,6 @@ const PetsPage = () => {
     formState: { errors },
   } = useForm();
 
-  // Fetch pets from backend
-  // useEffect(() => {
-  //   axios
-  //     .get("/pets")
-  //     .then((response) => setPets(response.data.data))
-  //     .catch((error) => console.error("Error fetching pets:", error));
-  // }, []);
   useEffect(() => {
     const userId = localStorage.getItem("id"); // Get logged-in user ID from storage
 
@@ -38,7 +33,8 @@ const PetsPage = () => {
     axios
       .get(`/pets?owner=${userId}`) // Fetch pets for the specific user
       .then((response) => setPets(response.data.data))
-      .catch((error) => console.error("Error fetching pets:", error));
+      .catch((error) => console.error("Error fetching pets:", error))
+      .finally(() => setLoading(false)); // Stop loader after fetching
   }, []);
 
   // Open modal for adding/editing pet
@@ -71,6 +67,7 @@ const PetsPage = () => {
 
   // Handle Add/Edit Pet Submission
   const onSubmit = async (data) => {
+    setSubmitting(true); // Start loading when form is submitted
     try {
       const userId = localStorage.getItem("id"); // Ensure correct key is used
       if (!userId) {
@@ -106,6 +103,8 @@ const PetsPage = () => {
       reset();
     } catch (error) {
       console.error("Error saving pet:", error);
+    } finally {
+      setSubmitting(false); // Stop loading when form submission is complete
     }
   };
 
@@ -116,56 +115,64 @@ const PetsPage = () => {
         onClick={() => openModal()}
         className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-300 mb-6"
       >
-        ➕ Add Pet
+        Add Pet
       </button>
 
       {/* Pet List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pets.length > 0 ? (
-          pets.map((pet) => (
-            <div
-              key={pet._id}
-              className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center"
-            >
-              <img
-                src={pet.photos.length > 0 ? pet.photos[0] : DEFAULT_PHOTO}
-                alt={pet.name}
-                className="w-32 h-32 rounded-full object-cover border"
-              />
-              <h2 className="text-xl font-bold mt-3">{pet.name}</h2>
-              <p className="text-gray-600">{pet.breed}</p>
-              <p className="text-gray-500">Age: {pet.age} years</p>
-              <p className="text-gray-500">Weight: {pet.weight || "N/A"} kg</p>
-              <p className="text-gray-500">
-                Medical History: {pet.medicalHistory || "N/A"}
-              </p>
+      {loading ? (
+        <div className="flex justify-center items-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pets.length > 0 ? (
+            pets.map((pet) => (
+              <div
+                key={pet._id}
+                className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center"
+              >
+                <img
+                  src={pet.photos.length > 0 ? pet.photos[0] : DEFAULT_PHOTO}
+                  alt={pet.name}
+                  className="w-32 h-32 rounded-full object-cover border"
+                />
+                <h2 className="text-xl font-bold mt-3">{pet.name}</h2>
+                <p className="text-gray-600">{pet.breed}</p>
+                <p className="text-gray-500">Age: {pet.age} years</p>
+                <p className="text-gray-500">
+                  Weight: {pet.weight || "N/A"} kg
+                </p>
+                <p className="text-gray-500">
+                  Medical History: {pet.medicalHistory || "N/A"}
+                </p>
 
-              <div className="flex space-x-2 mt-3">
-                <button
-                  onClick={() => openModal(pet)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() =>
-                    axios
-                      .delete(`/pet/${pet._id}`)
-                      .then(() =>
-                        setPets(pets.filter((p) => p._id !== pet._id))
-                      )
-                  }
-                  className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-                >
-                  🗑️ Delete
-                </button>
+                <div className="flex space-x-2 mt-3">
+                  <button
+                    onClick={() => openModal(pet)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() =>
+                      axios
+                        .delete(`/pet/${pet._id}`)
+                        .then(() =>
+                          setPets(pets.filter((p) => p._id !== pet._id))
+                        )
+                    }
+                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No pets added yet.</p>
-        )}
-      </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No pets added yet.</p>
+          )}
+        </div>
+      )}
 
       {/* Modal for Adding/Editing Pet */}
       {showModal && (
@@ -248,7 +255,11 @@ const PetsPage = () => {
                   type="submit"
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >
-                  {editMode ? "Save Changes" : "Add Pet"}
+                  {submitting
+                    ? "Saving..."
+                    : editMode
+                    ? "Save Changes"
+                    : "Add Pet"}
                 </button>
               </div>
             </form>

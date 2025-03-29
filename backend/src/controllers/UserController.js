@@ -24,6 +24,7 @@ const upload = multer({ storage: storage }).fields([
   { name: "expertiseCertificate", maxCount: 1 },
 ]);
 
+//signup
 const signup = async (req, res) => {
   try {
     // console.log("Request Body:", req.body);
@@ -69,10 +70,105 @@ const signup = async (req, res) => {
     }
 
     const savedUser = await newUser.save();
+    const mailContent = `<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to PetCircle</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f8f8f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      background-color: #ffffff;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #444;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+    .message {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.6;
+      padding: 20px 0;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #ff7f50;
+    }
+    .button {
+      display: block;
+      width: 180px;
+      margin: 20px auto;
+      padding: 12px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #ff7f50;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    .button:hover {
+      background-color: #e66a42;
+    }
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">Welcome to PetCircle! 🐾</div>
+    
+    <div class="message">
+      <p>Dear <span class="highlight">${username}</span>,</p>
+      <p>We're excited to welcome you to <b>PetCircle</b>, a thriving community for pet lovers, owners, and experts.</p>
+      <p>Here, you can:</p>
+      <ul>
+        <li>Connect with fellow pet owners and share experiences.</li>
+        <li>Get expert advice on pet health, nutrition, and training.</li>
+        <li>Adopt and rehome pets responsibly.</li>
+        <li>Join communities tailored to your interests and pet needs.</li>
+      </ul>
+      <p>Our goal is to make pet parenting easier, more joyful, and more connected.</p>
+      <p>We can’t wait to see you in action!</p>
+
+      <a href="#" class="button">Get Started</a>
+    </div>
+
+    <div class="footer">
+      <p>Best wishes,</p>
+      <p><b>The PetCircle Team</b></p>
+    </div>
+  </div>
+
+</body>
+</html>
+`;
     await mailUtil.sendingMail(
       savedUser.email,
       "welcome to petcircle",
-      "this is welcome mail"
+      mailContent
     );
     res.status(201).json({
       message: "User created successfully",

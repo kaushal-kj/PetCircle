@@ -36,7 +36,7 @@ const contestRoutes = require("./src/routes/ContestRoute");
 app.use(contestRoutes);
 
 //database connection
-mongoose.connect("mongodb://127.0.0.1:27017/pc").then(() => {
+mongoose.connect("mongodb://127.0.0.1:27017/PetCircle").then(() => {
   console.log("database connected.");
 });
 

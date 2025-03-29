@@ -6,6 +6,7 @@ const expertSchema = new mongoose.Schema({
   bio: { type: String },
   expertiseCertificate: { type: String, default: "" }, // Cloudinary URL for certificate upload
   isVerified: { type: Boolean, default: false }, // Admin verification
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   consultations: [
     {
       petOwner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

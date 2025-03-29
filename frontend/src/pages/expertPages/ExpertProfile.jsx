@@ -5,7 +5,8 @@ import axios from "axios";
 const ExpertProfile = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState(null);
 
@@ -49,7 +50,7 @@ const ExpertProfile = () => {
       setPosts([response.data.data, ...posts]); // Update UI
       setCaption("");
       setImage(null);
-      setShowModal(false); // Close the modal
+      setShowPostModal(false); // Close the modal
     } catch (error) {
       console.error("Error creating post:", error);
     }
@@ -95,7 +96,7 @@ const ExpertProfile = () => {
                 <span className="text-green-600">✅ Certificate Uploaded</span>{" "}
                 &nbsp;&nbsp;&nbsp;
                 <button
-                  onClick={() => setShowModal(true)}
+                  onClick={() => setShowCertificateModal(true)}
                   className="bg-green-600 cursor-pointer text-white px-2 py-1 rounded hover:bg-green-700 mt-2"
                 >
                   View Certificate
@@ -130,16 +131,16 @@ const ExpertProfile = () => {
         </button>
       </div>
 
-      {/* ✅ Create Post Button (Opens Modal) */}
+      {/*  Create Post Button (Opens Modal) */}
       <button
-        onClick={() => setShowModal(true)}
+        onClick={() => setShowPostModal(true)}
         className="bg-green-600 text-white px-4 py-2 rounded mt-6 hover:bg-green-700"
       >
-        ➕ Create Post
+        Create Post
       </button>
 
-      {/* ✅ Post Creation Modal */}
-      {showModal && (
+      {/*  Post Creation Modal */}
+      {showPostModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Create a Post</h2>
@@ -160,7 +161,7 @@ const ExpertProfile = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowPostModal(false)}
                   className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
                 >
                   Cancel
@@ -177,8 +178,8 @@ const ExpertProfile = () => {
         </div>
       )}
 
-      {/* ✅ Modal to View Certificate */}
-      {showModal && (
+      {/*  Modal to View Certificate */}
+      {showCertificateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg">
             <h2 className="text-xl font-bold mb-4">Expertise Certificate</h2>
@@ -189,7 +190,7 @@ const ExpertProfile = () => {
             />
             <div className="flex justify-end mt-4">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowCertificateModal(false)}
                 className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
               >
                 Close

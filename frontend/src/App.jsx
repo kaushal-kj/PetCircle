@@ -23,6 +23,9 @@ import FullPostExpert from "./pages/expertPages/FullPostExpert";
 import ConsultationsPage from "./pages/expertPages/ConsultationsPage";
 import ResetPassword from "./pages/common/ResetPassword";
 import ForgotPassword from "./pages/common/ForgotPassword";
+import AddCommunityForm from "./pages/community/AddCommunityForm";
+import CommunityDetailPage from "./pages/community/CommunityDetailPage";
+import ViewExpertProfile from "./pages/expert/ViewExpertProfile";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -36,19 +39,22 @@ function App() {
         <Route path="/resetpassword/:token" element={<ResetPassword />} />
 
         <Route path="" element={<PrivateRoutes />}>
-          //petowner routes
+          {/* petowner routes */}
           <Route path="/main" element={<MainPage />}>
             <Route path="feeds" element={<FeedPage />} />
             <Route path="pets" element={<PetsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
+            <Route path="communities/add" element={<AddCommunityForm />} />
+            <Route path="communities/:id" element={<CommunityDetailPage />} />
             <Route path="adoptions" element={<AdoptionsPage />} />
             <Route path="experts" element={<ExpertsPage />} />
+            <Route path="experts/:id" element={<ViewExpertProfile />} />
             <Route path="contests" element={<ContestsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="profile/edit" element={<EditProfile />} />
             <Route path="profile/:id" element={<FullPostView />} />
           </Route>
-          //expert routes
+          {/* expert routes */}
           <Route path="/expert" element={<ExpertDashboard />}>
             <Route path="feeds" element={<FeedPage />} />
             <Route path="profile" element={<ExpertProfile />} />
@@ -56,6 +62,8 @@ function App() {
             <Route path="profile/:id" element={<FullPostExpert />} />
             <Route path="consultations" element={<ConsultationsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
+            <Route path="communities/add" element={<AddCommunityForm />} />
+            <Route path="communities/:id" element={<CommunityDetailPage />} />
           </Route>
         </Route>
       </Routes>

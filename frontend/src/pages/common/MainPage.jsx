@@ -79,14 +79,14 @@ const MainPage = () => {
                 <FaUserMd className="mr-2" /> Experts
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="contests"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
                 <FaTrophy className="mr-2" /> Contests
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 to="profile"

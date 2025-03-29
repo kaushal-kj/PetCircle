@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
@@ -15,6 +15,7 @@ const SignUp = () => {
   } = useForm();
   const navigate = useNavigate();
   const selectedRole = watch("role"); // Watch role selection
+  const [loading, setLoading] = useState(false);
 
   // ✅ Validation Rules
   const validationRules = {
@@ -72,21 +73,12 @@ const SignUp = () => {
 
   // ✅ Handle Form Submission
   const onSubmit = async (data) => {
-    // Show toast immediately
-    toast.info("Signing Up... Please wait!", {
-      position: "top-center",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "dark",
-      transition: Slide,
-    });
+    setLoading(true);
     try {
       const response = await axios.post("/user/signup", data);
       if (response.status === 201) {
         // toast.success("Sign Up Successful! Redirecting to Login...");
+        setLoading(false);
         toast.success("Sign Up Successful! ", {
           position: "top-center",
           autoClose: 2000,
@@ -101,7 +93,6 @@ const SignUp = () => {
         setTimeout(() => navigate("/login"), 2000);
       }
     } catch (error) {
-      // toast.error(error.response?.data?.message || "Sign Up Failed");
       toast.error(error.response?.data?.message || "Sign Up Failed", {
         position: "top-center",
         autoClose: 2000,
@@ -136,6 +127,7 @@ const SignUp = () => {
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-800">
             Create Your Account
           </h2>
+
           <p className="mt-2 text-center text-sm text-gray-600">
             Already have an account?{" "}
             <Link to="/login" className="text-green-600 hover:text-green-500">
@@ -254,7 +246,7 @@ const SignUp = () => {
             type="submit"
             className="w-full bg-green-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-green-700"
           >
-            Sign Up
+            {loading ? "Signing up..." : "Signup"}
           </button>
         </form>
       </div>

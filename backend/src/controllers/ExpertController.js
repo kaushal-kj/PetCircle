@@ -4,10 +4,16 @@ const UserModel = require("../models/UserModel");
 // Get All Experts
 const getAllExperts = async (req, res) => {
   try {
-    const experts = await ExpertModel.find().populate(
-      "user",
-      "fullName username email profilePic"
-    );
+    // const experts = await ExpertModel.find().populate(
+    //   "user",
+    //   "fullName username email profilePic"
+    // );
+    const experts = await ExpertModel.find().populate({
+      path: "user",
+      select: "fullName username email profilePic bio",
+      strictPopulate: false, // Ensures population even if some users are missing
+    });
+
     res
       .status(200)
       .json({ message: "Experts fetched successfully", data: experts });
@@ -20,9 +26,9 @@ const getAllExperts = async (req, res) => {
 const getExpertById = async (req, res) => {
   try {
     const expert = await ExpertModel.findById(req.params.id)
-      .populate("user", "fullName username email profilePic") // Populate user details
+      .populate("user", "fullName username email profilePic bio")
+      .populate("posts") // Populate user details
       .populate("consultations.petOwner", "fullName email"); // Populate pet owner details
-
     if (!expert) {
       return res.status(404).json({ message: "Expert not found" });
     }
