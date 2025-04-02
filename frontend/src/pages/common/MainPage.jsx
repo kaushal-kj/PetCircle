@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FaHome,
@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { MdGridOn } from "react-icons/md";
+import axios from "axios";
 
 const MainPage = () => {
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -17,6 +18,19 @@ const MainPage = () => {
   const navigate = useNavigate();
 
   const isMainPage = location.pathname === "/main";
+
+  const userId = localStorage.getItem("id");
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    if (userId) {
+      axios
+        .get(`/user/${userId}`)
+        .then((response) => {
+          setUser(response.data.data);
+        })
+        .catch((error) => console.error("Error fetching user:", error));
+    }
+  }, [userId]);
 
   const handleLogout = () => {
     // ✅ Clear user session
@@ -44,7 +58,7 @@ const MainPage = () => {
                 to="feeds"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <MdGridOn className="mr-2" /> Feeds
+                <MdGridOn className="mr-4 ml-1" /> Feeds
               </Link>
             </li>
             <li>
@@ -52,7 +66,7 @@ const MainPage = () => {
                 to="pets"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaPaw className="mr-2" /> My Pets
+                <FaPaw className="mr-4 ml-1" /> My Pets
               </Link>
             </li>
             <li>
@@ -60,7 +74,7 @@ const MainPage = () => {
                 to="communities"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaUsers className="mr-2" /> Communities
+                <FaUsers className="mr-4 ml-1" /> Communities
               </Link>
             </li>
             <li>
@@ -68,7 +82,7 @@ const MainPage = () => {
                 to="adoptions"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaHandHoldingHeart className="mr-2" /> Adoptions
+                <FaHandHoldingHeart className="mr-4 ml-1" /> Adoptions
               </Link>
             </li>
             <li>
@@ -76,7 +90,7 @@ const MainPage = () => {
                 to="experts"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaUserMd className="mr-2" /> Experts
+                <FaUserMd className="mr-4 ml-1" /> Experts
               </Link>
             </li>
             {/* <li>
@@ -92,15 +106,21 @@ const MainPage = () => {
                 to="profile"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaUserMd className="mr-2" /> Profile
+                {/* <FaUserMd className="mr-2" /> */}
+                <img
+                  src={user?.profilePic || "https://via.placeholder.com/150"}
+                  alt="Profile"
+                  className="w-6 h-6 mr-3 rounded-full "
+                />
+                Profile
               </Link>
             </li>
             <li>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center p-2 hover:bg-gray-800 rounded"
+                className="w-full flex text-red-400 items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FiLogOut className="mr-2" /> Logout
+                <FiLogOut className="mr-4 ml-1" /> Logout
               </button>
             </li>
           </ul>

@@ -474,6 +474,119 @@ const resetpassword = async (req, res) => {
   }
 };
 
+//Follow a User
+const followUser = async (req, res) => {
+  try {
+    const { userId, followId } = req.body;
+
+    if (!userId || !followId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Follow ID are required" });
+    }
+
+    const user = await UserModel.findById(userId);
+    const followUser = await UserModel.findById(followId);
+
+    if (!user || !followUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.following.includes(followId)) {
+      return res.status(400).json({ message: "Already following this user" });
+    }
+
+    // Add follow relationship
+    user.following.push(followId);
+    followUser.followers.push(userId);
+
+    await user.save();
+    await followUser.save();
+
+    res.json({ message: "User followed successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error following user", error: error.message });
+  }
+};
+
+//Unfollow a User
+const unfollowUser = async (req, res) => {
+  try {
+    const { userId, unfollowId } = req.body;
+
+    if (!userId || !unfollowId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Unfollow ID are required" });
+    }
+
+    const user = await UserModel.findById(userId);
+    const unfollowUser = await UserModel.findById(unfollowId);
+
+    if (!user || !unfollowUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove follow relationship
+    user.following = user.following.filter(
+      (id) => id.toString() !== unfollowId
+    );
+    unfollowUser.followers = unfollowUser.followers.filter(
+      (id) => id.toString() !== userId
+    );
+
+    await user.save();
+    await unfollowUser.save();
+
+    res.json({ message: "User unfollowed successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error unfollowing user", error: error.message });
+  }
+};
+
+//Get Followers List
+const getFollowers = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.id).populate(
+      "followers",
+      "fullName profilePic"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ followers: user.followers });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching followers", error: error.message });
+  }
+};
+
+//Get Following List
+const getFollowing = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.id).populate(
+      "following",
+      "fullName profilePic"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ following: user.following });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching following", error: error.message });
+  }
+};
 module.exports = {
   signup,
   loginUser,
@@ -482,4 +595,8 @@ module.exports = {
   updateProfile,
   forgotPassword,
   resetpassword,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing,
 };

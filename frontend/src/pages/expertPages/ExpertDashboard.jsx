@@ -1,14 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaHome, FaUserMd, FaUsers, FaClipboardList } from "react-icons/fa";
 import { MdGridOn } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
+import axios from "axios";
 
 const ExpertDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const isDashboard = location.pathname === "/expert";
+
+  const userId = localStorage.getItem("id");
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    if (userId) {
+      axios
+        .get(`/user/${userId}`)
+        .then((response) => {
+          setUser(response.data.data);
+        })
+        .catch((error) => console.error("Error fetching user:", error));
+    }
+  }, [userId]);
 
   const handleLogout = () => {
     // ✅ Clear user session
@@ -33,7 +47,7 @@ const ExpertDashboard = () => {
                 to="feeds"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <MdGridOn className="mr-2" /> Feeds
+                <MdGridOn className="mr-4 ml-1" /> Feeds
               </Link>
             </li>
             <li>
@@ -41,7 +55,7 @@ const ExpertDashboard = () => {
                 to="consultations"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaClipboardList className="mr-2" /> Consultations
+                <FaClipboardList className="mr-4 ml-1" /> Consultations
               </Link>
             </li>
             <li>
@@ -49,7 +63,7 @@ const ExpertDashboard = () => {
                 to="communities"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaUsers className="mr-2" /> Communities
+                <FaUsers className="mr-4 ml-1" /> Communities
               </Link>
             </li>
             <li>
@@ -57,15 +71,21 @@ const ExpertDashboard = () => {
                 to="profile"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FaUserMd className="mr-2" /> Profile
+                {/* <FaUserMd className="mr-2" /> */}
+                <img
+                  src={user?.profilePic || "https://via.placeholder.com/150"}
+                  alt="Profile"
+                  className="w-6 h-6 mr-3 rounded-full "
+                />
+                Profile
               </Link>
             </li>
             <li>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center p-2 hover:bg-gray-800 rounded"
+                className="w-full flex text-red-400 items-center p-2 hover:bg-gray-800 rounded"
               >
-                <FiLogOut className="mr-2" /> Logout
+                <FiLogOut className="mr-4 ml-1" /> Logout
               </button>
             </li>
           </ul>

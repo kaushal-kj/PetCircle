@@ -24,39 +24,58 @@ const ExpertsPage = () => {
     fetchExperts();
   }, []);
 
-  if (loading) return <p className="text-center text-lg">Loading experts...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <p className="text-center text-lg text-blue-500">Loading experts...</p>
+    );
+  if (error)
+    return <p className="text-center text-red-500 font-semibold">{error}</p>;
   if (experts.length === 0)
-    return <p className="text-center text-gray-500">No experts found.</p>;
+    return (
+      <p className="text-center text-gray-500 italic">No experts found.</p>
+    );
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold text-center mb-6">Our Experts</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
+        Meet Our Experts
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {experts.map((expert) => {
           const expertName = expert.user?.fullName || "Unknown Expert";
           const profilePic = expert.user?.profilePic || "/default-avatar.png";
           const specialization = expert.expertise || "Not specified";
-          const isVerified = expert.isVerified
-            ? "✅ Verified"
-            : "❌ Not Verified";
+          const isVerified = expert.isVerified;
 
           return (
             <div
               key={expert._id}
-              className="border p-4 rounded-lg shadow-lg cursor-pointer hover:bg-gray-100 transition"
+              className="bg-white border rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer"
               onClick={() => navigate(`${expert._id}`)}
             >
-              <img
-                src={profilePic}
-                alt={expertName}
-                className="w-20 h-20 rounded-full mb-3 object-cover mx-auto"
-              />
-              <h3 className="text-lg font-semibold text-center">
-                {expertName}
-              </h3>
-              <p className="text-gray-600 text-center">{specialization}</p>
-              <p className="text-sm text-gray-500 text-center">{isVerified}</p>
+              <div className="relative">
+                <img
+                  src={profilePic}
+                  alt={expertName}
+                  className="w-full h-40 object-cover"
+                />
+                {/* {isVerified && (
+                  <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                    Verified ✅
+                  </span>
+                )} */}
+              </div>
+              <div className="p-4 text-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {expertName}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">{specialization}</p>
+              </div>
+              <div className="bg-gray-100 p-3 text-center">
+                <button className="w-full py-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+                  View Profile
+                </button>
+              </div>
             </div>
           );
         })}

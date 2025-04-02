@@ -27,7 +27,10 @@ const getExpertById = async (req, res) => {
   try {
     const expert = await ExpertModel.findById(req.params.id)
       .populate("user", "fullName username email profilePic bio")
-      .populate("posts") // Populate user details
+      .populate({
+        path: "posts", // 🔥 Populating posts related to the expert
+        options: { sort: { createdAt: -1 } }, // Sort posts by newest first
+      }) // Populate user details
       .populate("consultations.petOwner", "fullName email"); // Populate pet owner details
     if (!expert) {
       return res.status(404).json({ message: "Expert not found" });

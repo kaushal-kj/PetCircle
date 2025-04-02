@@ -3,6 +3,7 @@ const Post = require("../models/PostModel");
 
 const multer = require("multer");
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
+const ExpertModel = require("../models/ExpertModel");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -47,7 +48,8 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await PostModel.find()
-      .populate("author", "username email profilePic")
+      .populate("author", "username email profilePic role")
+      .populate("expert")
       .populate("pet", "name breed")
       .populate({
         path: "comments.author", // Populate comment authors
@@ -93,6 +95,24 @@ const getUserPosts = async (req, res) => {
       .json({ message: "User posts fetched successfully", data: posts });
   } catch (error) {
     res.status(500).json({ message: "Error fetching user posts", error });
+  }
+};
+
+//get expert posts
+const getPostsByExpert = async (req, res) => {
+  try {
+    const { expertId } = req.params;
+
+    // 🔥 Fetch posts where author is the expertId
+    const posts = await PostModel.find({ author: expertId }).sort({
+      createdAt: -1,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Posts fetched successfully", data: posts });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching posts", error });
   }
 };
 
@@ -183,6 +203,7 @@ module.exports = {
   getAllPosts,
   getPostById,
   getUserPosts,
+  getPostsByExpert,
   deletePost,
   toggleLikePost,
   addComment,

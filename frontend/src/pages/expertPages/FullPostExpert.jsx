@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -38,7 +38,7 @@ const FullPostExpert = () => {
             onClick={handleDelete}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
-            🗑️ Delete Post
+            Delete Post
           </button>
         </div>
       </div>

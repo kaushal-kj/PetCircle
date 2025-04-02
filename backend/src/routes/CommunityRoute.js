@@ -1,17 +1,31 @@
 const express = require("express");
-const router = express.Router();
 const {
   createCommunity,
   getAllCommunities,
   getCommunityById,
   joinCommunity,
   leaveCommunity,
+  deleteCommunity,
 } = require("../controllers/CommunityController");
 
-router.post("/community", createCommunity);
-router.get("/communities", getAllCommunities);
+const router = express.Router();
+
+// Create a new community
+router.post("/community/create", createCommunity);
+
+// Get all communities
+router.get("/community/getall", getAllCommunities);
+
+// Get a specific community by ID
 router.get("/community/:id", getCommunityById);
-router.put("/community/:id/join", joinCommunity);
-router.put("/community/:id/leave", leaveCommunity);
+
+// Join a community
+router.post("/community/join", joinCommunity);
+
+// Leave a community
+router.post("/community/leave", leaveCommunity);
+
+// Delete a community (Only the creator can delete it)
+router.delete("/community/delete", deleteCommunity);
 
 module.exports = router;

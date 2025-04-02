@@ -9,4 +9,12 @@ routes.put("/user/update/:id", userController.updateProfile);
 routes.post("/user/forgotpassword", userController.forgotPassword);
 routes.post("/user/resetpassword", userController.resetpassword);
 
+//follow and unfollow routes
+routes.post("/user/follow", userController.followUser);
+routes.post("/user/unfollow", userController.unfollowUser);
+
+//get followers and following
+routes.get("/user/:id/followers", userController.getFollowers);
+routes.get("/user/:id/following", userController.getFollowing);
+
 module.exports = routes;
