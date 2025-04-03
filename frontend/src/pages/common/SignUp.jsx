@@ -17,7 +17,7 @@ const SignUp = () => {
   const selectedRole = watch("role"); // Watch role selection
   const [loading, setLoading] = useState(false);
 
-  // ✅ Validation Rules
+  //  Validation Rules
   const validationRules = {
     role: { required: "Role is required" },
     username: {
@@ -71,7 +71,7 @@ const SignUp = () => {
     terms: { required: "You must accept the terms and conditions" },
   };
 
-  // ✅ Handle Form Submission
+  //  Handle Form Submission
   const onSubmit = async (data) => {
     setLoading(true);
     try {
@@ -223,7 +223,7 @@ const SignUp = () => {
             )}
           </div>
 
-          {/* ✅ Terms and Conditions */}
+          {/*  Terms and Conditions */}
           <div className="flex items-center space-x-2">
             <input
               type="checkbox"

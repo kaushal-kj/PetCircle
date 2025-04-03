@@ -33,14 +33,14 @@ const MainPage = () => {
   }, [userId]);
 
   const handleLogout = () => {
-    // ✅ Clear user session
+    //  Clear user session
     localStorage.removeItem("id");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     localStorage.removeItem("email");
     localStorage.removeItem("profilePic");
 
-    // ✅ Redirect to login page
+    //  Redirect to login page
     navigate("/login");
   };
 

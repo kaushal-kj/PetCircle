@@ -20,10 +20,10 @@ import ExpertDashboard from "./pages/expertPages/ExpertDashboard";
 import ExpertProfile from "./pages/expertPages/ExpertProfile";
 import EditExpertProfile from "./pages/expertPages/EditExpertProfile";
 import FullPostExpert from "./pages/expertPages/FullPostExpert";
-import ConsultationsPage from "./pages/expertPages/ConsultationsPage";
 import ResetPassword from "./pages/common/ResetPassword";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import ViewExpertProfile from "./pages/expert/ViewExpertProfile";
+import ViewProfile from "./pages/profile/ViewProfile";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -40,6 +40,7 @@ function App() {
           {/* petowner routes */}
           <Route path="/main" element={<MainPage />}>
             <Route path="feeds" element={<FeedPage />} />
+            <Route path="feeds/:id" element={<ViewProfile />} />
             <Route path="pets" element={<PetsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
             <Route path="adoptions" element={<AdoptionsPage />} />
@@ -53,10 +54,11 @@ function App() {
           {/* expert routes */}
           <Route path="/expert" element={<ExpertDashboard />}>
             <Route path="feeds" element={<FeedPage />} />
+            <Route path="feeds/:id" element={<ViewProfile />} />
             <Route path="profile" element={<ExpertProfile />} />
             <Route path="profile/edit" element={<EditExpertProfile />} />
             <Route path="profile/:id" element={<FullPostExpert />} />
-            <Route path="consultations" element={<ConsultationsPage />} />
+            <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="communities" element={<CommunitiesPage />} />
           </Route>
         </Route>

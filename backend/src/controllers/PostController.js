@@ -48,7 +48,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await PostModel.find()
-      .populate("author", "username email profilePic role")
+      .populate("author", "username email profilePic role expertProfile")
       .populate("expert")
       .populate("pet", "name breed")
       .populate({

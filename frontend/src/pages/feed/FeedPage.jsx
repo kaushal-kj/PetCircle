@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaHeart, FaRegHeart, FaRegCommentDots, FaShare } from "react-icons/fa";
 import { GiShare } from "react-icons/gi";
+import { Link, useNavigate } from "react-router-dom";
 
 const FeedPage = () => {
   const [posts, setPosts] = useState([]);
@@ -21,7 +22,7 @@ const FeedPage = () => {
       .catch((error) => console.error("Error fetching posts:", error));
   }, []);
 
-  // ✅ Toggle Like (Fixing Bug)
+  //  Toggle Like (Fixing Bug)
   const toggleLike = async (postId) => {
     try {
       const response = await axios.put(`/post/${postId}/like`, { userId });
@@ -37,12 +38,12 @@ const FeedPage = () => {
     }
   };
 
-  // ✅ Open Comment Section
+  //  Open Comment Section
   const openComments = (postId) => {
     setOpenCommentPost(openCommentPost === postId ? null : postId); // Toggle comment section
   };
 
-  // ✅ Add Comment (Backend)
+  //  Add Comment (Backend)
   const handleComment = async (postId) => {
     if (!commentText) return;
     const userId = localStorage.getItem("id"); // Get logged-in user ID
@@ -78,7 +79,7 @@ const FeedPage = () => {
     }
   };
 
-  // ✅ Share Post
+  //  Share Post
   const handleShare = (postId) => {
     navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
     alert("Post link copied to clipboard!");
@@ -104,10 +105,38 @@ const FeedPage = () => {
       console.error("Error deleting comment:", error);
     }
   };
+  //new code
+  const loggedInUserRole = localStorage.getItem("role"); // Get logged-in user's role
+  const navigate = useNavigate();
+
+  const handleProfileClick = (profileId, role, expertId) => {
+    if (profileId === userId) {
+      // Navigate to the logged-in user's profile based on their role
+      if (role === "expert") {
+        navigate("/expert/profile");
+      } else {
+        navigate("/main/profile");
+      }
+    } else if (role === "expert" && expertId) {
+      // If clicking an expert's profile, navigate correctly based on the logged-in user's role
+      if (loggedInUserRole === "expert") {
+        navigate(`/expert/experts/${expertId}`); // Expert viewing another expert
+      } else {
+        navigate(`/main/experts/${expertId}`); // Pet owner viewing an expert
+      }
+    } else {
+      // If clicking on a pet owner, navigate based on the logged-in user's role
+      if (loggedInUserRole === "expert") {
+        navigate(`/expert/feeds/${profileId}`);
+      } else {
+        navigate(`/main/feeds/${profileId}`);
+      }
+    }
+  };
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">📸 Feeds</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Feeds</h1>
 
       <div className="space-y-8">
         {posts.length > 0 ? (
@@ -116,16 +145,33 @@ const FeedPage = () => {
               key={post._id}
               className="bg-white shadow-md rounded-lg overflow-hidden"
             >
-              {/* ✅ Post Header (Fixing Bug) */}
-              <div className="p-4 flex items-center space-x-4">
+              {/*  Post Header (Fixing Bug) */}
+              <div
+                className="p-4 flex items-center space-x-4"
+                onClick={() =>
+                  handleProfileClick(
+                    post.author?._id,
+                    post.author?.role,
+                    post.author?.expertProfile,
+                    loggedInUserRole
+                  )
+                }
+              >
+                {/* <Link
+                  to={`${post.author?._id}`}
+                  className="flex items-center space-x-2"
+                > */}
                 <img
                   src={
                     post.author?.profilePic || "https://via.placeholder.com/50"
                   }
                   alt="User"
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full cursor-pointer"
                 />
-                <p className="font-bold">{post.author?.username}</p>
+                <p className="font-bold cursor-pointer">
+                  {post.author?.username}
+                </p>
+                {/* </Link> */}
               </div>
 
               {/* Post Image */}

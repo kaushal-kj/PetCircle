@@ -32,7 +32,7 @@ const ExpertProfile = () => {
     }
   }, [userId]);
 
-  // ✅ Handle Adding a New Post
+  //  Handle Adding a New Post
   const handleAddPost = async (event) => {
     event.preventDefault();
     if (!caption || !image) return alert("Caption and image are required!");
@@ -55,7 +55,7 @@ const ExpertProfile = () => {
       console.error("Error creating post:", error);
     }
   };
-  // ✅ Handle Viewing Full Post
+  //  Handle Viewing Full Post
   const handleViewPost = (post) => {
     navigate(`${post._id}`, { state: post });
   };

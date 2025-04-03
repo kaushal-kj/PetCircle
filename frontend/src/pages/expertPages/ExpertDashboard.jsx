@@ -25,14 +25,14 @@ const ExpertDashboard = () => {
   }, [userId]);
 
   const handleLogout = () => {
-    // ✅ Clear user session
+    //  Clear user session
     localStorage.removeItem("id");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     localStorage.removeItem("email");
     localStorage.removeItem("profilePic");
 
-    // ✅ Redirect to login page
+    //  Redirect to login page
     navigate("/login");
   };
   return (
@@ -48,14 +48,6 @@ const ExpertDashboard = () => {
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
                 <MdGridOn className="mr-4 ml-1" /> Feeds
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="consultations"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaClipboardList className="mr-4 ml-1" /> Consultations
               </Link>
             </li>
             <li>

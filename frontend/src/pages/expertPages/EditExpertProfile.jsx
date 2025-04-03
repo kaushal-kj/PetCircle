@@ -26,7 +26,7 @@ const EditExpertProfile = () => {
     }
   }, [userId]);
 
-  // ✅ Handle Profile Update
+  //  Handle Profile Update
   const handleUpdate = async (event) => {
     event.preventDefault();
     const formData = new FormData();

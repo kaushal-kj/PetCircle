@@ -8,7 +8,7 @@ const FullPostExpert = () => {
 
   if (!post) return <p className="text-center text-gray-500">Post not found</p>;
 
-  // ✅ Handle Delete Post
+  //  Handle Delete Post
   const handleDelete = async () => {
     try {
       await axios.delete(`/post/${post._id}`);

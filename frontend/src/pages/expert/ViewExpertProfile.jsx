@@ -6,36 +6,12 @@ const ViewExpertProfile = () => {
   const { expertId } = useParams();
   const [expert, setExpert] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const loggedInUserId = localStorage.getItem("id"); // Current logged-in user ID
 
   // const userId = localStorage.getItem("id"); // Get logged-in expert ID
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (expertId) {
-  //     axios
-  //       .get(`/expert/${expertId}`)
-  //       .then((response) => {
-  //         console.log(response.data.data);
-  //         setExpert(response.data.data);
-  //       })
-  //       .catch((error) => console.error("Error fetching expert:", error));
-
-  //     axios
-  //       .get(`/posts`)
-  //       .then((response) => {
-  //         const expertPosts = response.data.data.filter(
-  //           (post) => post.author.role === "expert"
-  //         );
-
-  //         const sortedPosts = expertPosts.sort(
-  //           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  //         );
-  //         setPosts(sortedPosts);
-  //       })
-  //       .catch((error) => console.error("Error fetching posts:", error));
-  //   }
-  // }, [expertId]);
 
   useEffect(() => {
     if (expertId) {
@@ -43,7 +19,13 @@ const ViewExpertProfile = () => {
       axios
         .get(`/expert/${expertId}`)
         .then((response) => {
+          console.log(response.data.data);
           setExpert(response.data.data); // Store expert data
+
+          // Check if logged-in user follows this expert
+          if (response.data.data.user.followers.includes(loggedInUserId)) {
+            setIsFollowing(true);
+          }
         })
         .catch((error) => console.error("Error fetching expert:", error));
     }
@@ -71,6 +53,34 @@ const ViewExpertProfile = () => {
         .catch((error) => console.error("Error fetching posts:", error));
     }
   }, [expert]);
+
+  // Handle Follow/Unfollow
+  const handleFollowToggle = async () => {
+    try {
+      const url = isFollowing ? "/user/unfollow" : "/user/follow";
+      const requestData = isFollowing
+        ? { userId: loggedInUserId, unfollowId: expert?.user?._id } // Unfollow request
+        : { userId: loggedInUserId, followId: expert?.user?._id }; // Follow request
+
+      await axios.post(url, requestData);
+
+      // Update UI instantly
+      setIsFollowing(!isFollowing);
+      setExpert((prevExpert) => ({
+        ...prevExpert,
+        user: {
+          ...prevExpert.user,
+          followers: isFollowing
+            ? (prevExpert?.user?.followers || []).filter(
+                (fid) => fid !== loggedInUserId
+              )
+            : [...(prevExpert?.user?.followers || []), loggedInUserId],
+        },
+      }));
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+    }
+  };
 
   //  Handle Viewing Full Post
   const handleViewPost = (post) => {
@@ -125,25 +135,31 @@ const ViewExpertProfile = () => {
               <span className="font-bold">{posts.length}</span>{" "}
               <span>Posts</span>
               <span className="font-bold">
-                {expert.followers?.length || 0}
+                {expert?.user.followers?.length || 0}
               </span>{" "}
               <span>Followers</span>
               <span className="font-bold">
-                {expert.following?.length || 0}
+                {expert?.user?.following?.length || 0}
               </span>{" "}
               <span>Following</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 🔄 Replace Create Post with Request Consultation */}
-      <button
-        onClick={() => navigate(`/consultation/request/${expertId}`)}
-        className="bg-blue-600 text-white px-4 py-2 rounded mt-6 hover:bg-blue-700"
-      >
-        Request Consultation
-      </button>
+        {/* Show Follow/Unfollow button if NOT viewing own profile */}
+        {loggedInUserId !== expert?.user?._id && (
+          <button
+            onClick={handleFollowToggle}
+            className={`px-4 py-1 rounded-md ${
+              isFollowing
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            {isFollowing ? "Unfollow" : "Follow"}
+          </button>
+        )}
+      </div>
 
       {/*  Modal to View Certificate */}
       {showCertificateModal && (
