@@ -10,6 +10,24 @@ const ExpertProfile = () => {
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState(null);
 
+  //followers followings list
+  const [showListModal, setShowListModal] = useState(false);
+  const [listType, setListType] = useState(""); // "followers" or "following"
+  const [listData, setListData] = useState([]);
+
+  const fetchList = async (type) => {
+    try {
+      const response = await axios.get(
+        `/user/${userId}/${type}` // e.g., /user/123/followers
+      );
+      setListType(type);
+      setListData(response.data[type]);
+      setShowListModal(true);
+    } catch (err) {
+      console.error("Error fetching", type, err);
+    }
+  };
+
   const userId = localStorage.getItem("id");
   const navigate = useNavigate();
 
@@ -108,16 +126,26 @@ const ExpertProfile = () => {
 
             {/* Followers/Following */}
             <div className="flex space-x-4 mt-2">
-              <span className="font-bold">{posts.length}</span>{" "}
-              <span>Posts</span>
-              <span className="font-bold">
-                {user.followers?.length || 0}
-              </span>{" "}
-              <span>Followers</span>
-              <span className="font-bold">
-                {user.following?.length || 0}
-              </span>{" "}
-              <span>Following</span>
+              <span>
+                <span className="font-bold">{posts.length}</span>&nbsp;&nbsp;
+                <span>Posts</span>
+              </span>
+              <span
+                className="cursor-pointer"
+                onClick={() => fetchList("followers")}
+              >
+                <span className="font-bold">{user.followers?.length || 0}</span>
+                &nbsp;&nbsp;
+                <span>Followers</span>
+              </span>
+              <span
+                className="cursor-pointer"
+                onClick={() => fetchList("following")}
+              >
+                <span className="font-bold">{user.following?.length || 0}</span>
+                &nbsp;&nbsp;
+                <span>Following</span>
+              </span>
             </div>
           </div>
         </div>
@@ -199,6 +227,61 @@ const ExpertProfile = () => {
           </div>
         </div>
       )}
+
+      {/* show following followers list model */}
+      {showListModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-[90%] max-w-md max-h-[80vh] p-6 overflow-hidden">
+            <div className="flex flex-col h-full">
+              <h2 className="text-2xl font-semibold text-center border-b pb-3 capitalize">
+                {listType}
+              </h2>
+
+              <div
+                className={`flex-1 overflow-y-auto mt-4 space-y-3 ${
+                  listData.length > 6
+                    ? "scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+                    : ""
+                }`}
+              >
+                {listData.length > 0 ? (
+                  listData.map((person) => (
+                    <div
+                      key={person._id}
+                      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg transition"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={
+                            person.profilePic ||
+                            "https://via.placeholder.com/50"
+                          }
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full object-cover border"
+                        />
+                        <p className="font-medium text-sm">{person.fullName}</p>
+                      </div>
+                      {/* You can add follow/unfollow or view profile button here */}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center mt-8">
+                    No {listType} yet.
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowListModal(false)}
+                className="mt-4 w-full py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Posts (Opens Full Post on Click) */}
       <h3 className="mt-6 text-lg font-semibold">Your Posts</h3>
       <div className="grid grid-cols-3 gap-2 mt-4">

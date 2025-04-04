@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FaHome, FaUserMd, FaUsers, FaClipboardList } from "react-icons/fa";
+import {
+  FaHome,
+  FaUserMd,
+  FaUsers,
+  FaClipboardList,
+  FaPaw,
+  FaHandHoldingHeart,
+} from "react-icons/fa";
 import { MdGridOn } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import axios from "axios";
@@ -52,10 +59,26 @@ const ExpertDashboard = () => {
             </li>
             <li>
               <Link
+                to="pets"
+                className="flex items-center p-2 hover:bg-gray-800 rounded"
+              >
+                <FaPaw className="mr-4 ml-1" /> My Pets
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="communities"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
                 <FaUsers className="mr-4 ml-1" /> Communities
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="adoptions"
+                className="flex items-center p-2 hover:bg-gray-800 rounded"
+              >
+                <FaHandHoldingHeart className="mr-4 ml-1" /> Adoptions
               </Link>
             </li>
             <li>

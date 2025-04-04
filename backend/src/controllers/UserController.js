@@ -341,26 +341,21 @@ const updateProfile = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-
     if (!email) {
       return res.status(400).json({ message: "Email is required." });
     }
-
     const foundUser = await userModel.findOne({ email });
-
     if (!foundUser) {
       return res
         .status(404)
         .json({ message: "User not found, please register first." });
     }
-
     // Generate a token with user ID and email only (avoid sending the full user object)
     const token = jwt.sign(
       { _id: foundUser._id, email: foundUser.email },
       secret,
       { expiresIn: "1h" }
     );
-
     console.log(token);
 
     const url = `http://localhost:5173/resetpassword/${token}`;
@@ -553,7 +548,7 @@ const getFollowers = async (req, res) => {
   try {
     const user = await UserModel.findById(req.params.id).populate(
       "followers",
-      "fullName profilePic"
+      "fullName profilePic role expertProfile"
     );
 
     if (!user) {
@@ -573,7 +568,7 @@ const getFollowing = async (req, res) => {
   try {
     const user = await UserModel.findById(req.params.id).populate(
       "following",
-      "fullName profilePic"
+      "fullName profilePic role expertProfile"
     );
 
     if (!user) {

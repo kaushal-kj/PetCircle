@@ -3,6 +3,7 @@ import axios from "axios";
 import { FaHeart, FaRegHeart, FaRegCommentDots, FaShare } from "react-icons/fa";
 import { GiShare } from "react-icons/gi";
 import { Link, useNavigate } from "react-router-dom";
+import CommentModal from "./CommentModal";
 
 const FeedPage = () => {
   const [posts, setPosts] = useState([]);
@@ -187,7 +188,7 @@ const FeedPage = () => {
 
               {/* Post Actions (Like, Comment, Share) */}
               <div className="p-4 flex items-center justify-between">
-                <div className="flex space-x-4">
+                <div className="flex space-x-2">
                   <button onClick={() => toggleLike(post._id)}>
                     {post.likes.includes(userId) ? (
                       <FaHeart className="text-red-500 text-2xl" />
@@ -195,17 +196,20 @@ const FeedPage = () => {
                       <FaRegHeart className="text-2xl" />
                     )}
                   </button>
+                  <p className="mr-5 text-gray-600">
+                    {post.likes.length === 0 ? "" : post.likes.length}
+                  </p>
                   <button onClick={() => openComments(post._id)}>
                     <FaRegCommentDots className="text-2xl" />
                   </button>
+                  <p className="mr-5 text-gray-600">
+                    {post.comments.length === 0 ? "" : post.comments.length}
+                  </p>
                 </div>
                 <button onClick={() => handleShare(post._id)}>
                   <GiShare className="text-2xl" />
                 </button>
               </div>
-
-              {/* Like Count */}
-              <p className="px-4 text-gray-600">{post.likes.length} Likes</p>
 
               {/* Caption */}
               <div className="p-4">
@@ -216,50 +220,19 @@ const FeedPage = () => {
               </div>
 
               {/* Comments Section (Only Opens When Clicked) */}
+              {/* Comment Modal */}
               {openCommentPost === post._id && (
-                <div className="p-4 border-t">
-                  {post.comments.length > 0 && (
-                    <div className="mb-2">
-                      {post.comments.map((comment, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center text-gray-600"
-                        >
-                          <p>
-                            <span className="font-bold">
-                              {comment.author?.username || "Unknown User"}
-                            </span>
-                            : {comment.text}
-                          </p>
-                          {comment.author?._id === userId && ( // Show delete button only for the comment owner
-                            <button
-                              onClick={() =>
-                                handleDeleteComment(post._id, comment._id)
-                              }
-                              className="text-red-500 text-sm ml-2"
-                            >
-                              ❌
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <input
-                    type="text"
-                    placeholder="Add a comment..."
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    className="w-full px-4 py-2 border rounded mt-2"
-                  />
-                  <button
-                    onClick={() => handleComment(post._id)}
-                    className="bg-blue-500 text-white px-4 py-1 rounded mt-2"
-                  >
-                    Post Comment
-                  </button>
-                </div>
+                <CommentModal
+                  isOpen={true}
+                  closeModal={() => setOpenCommentPost(null)}
+                  comments={post.comments}
+                  commentText={commentText}
+                  setCommentText={setCommentText}
+                  handleComment={handleComment}
+                  handleDeleteComment={handleDeleteComment}
+                  postId={post._id}
+                  userId={userId}
+                />
               )}
             </div>
           ))

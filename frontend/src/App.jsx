@@ -55,11 +55,13 @@ function App() {
           <Route path="/expert" element={<ExpertDashboard />}>
             <Route path="feeds" element={<FeedPage />} />
             <Route path="feeds/:id" element={<ViewProfile />} />
+            <Route path="pets" element={<PetsPage />} />
             <Route path="profile" element={<ExpertProfile />} />
             <Route path="profile/edit" element={<EditExpertProfile />} />
             <Route path="profile/:id" element={<FullPostExpert />} />
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="communities" element={<CommunitiesPage />} />
+            <Route path="adoptions" element={<AdoptionsPage />} />
           </Route>
         </Route>
       </Routes>
