@@ -1,168 +1,150 @@
 const Community = require("../models/CommunityModel");
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
-
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-// Configure Multer for file uploads
+// ---------- Multer Config ----------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./uploads"); // Store uploaded files in "uploads"
+    cb(null, "./uploads");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-const upload = multer({ storage: storage }).single("image");
+exports.upload = multer({ storage }).fields([{ name: "image", maxCount: 1 }]);
 
-// Create a new community
+// ---------- Create Community ----------
 const createCommunity = async (req, res) => {
-  upload(req, res, async (err) => {
-    if (err)
-      return res.status(500).json({ message: "Multer Error: " + err.message });
+  try {
+    const { name, description, creator } = req.body;
+    let imageUrl = "";
 
-    try {
-      const { name, description, type, createdBy } = req.body;
-
-      if (!name || !type || !createdBy) {
-        return res
-          .status(400)
-          .json({ message: "Name, Type, and CreatedBy are required fields" });
-      }
-
-      let imageUrl = "";
-      if (req.file) {
-        const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
-          req.file
-        );
-        imageUrl = cloudinaryResponse.secure_url;
-      }
-
-      const newCommunity = new Community({
-        name,
-        description,
-        type, // Ensure this field is included
-        createdBy,
-        image: imageUrl,
-        members: [createdBy],
-      });
-
-      await newCommunity.save();
-      res.status(201).json({
-        message: "Community created successfully",
-        community: newCommunity,
-      });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error creating community", error: error.message });
+    if (req.files?.image) {
+      const result = await cloudinaryUtil.uploadFileToCloudinary(
+        req.files.image[0]
+      );
+      imageUrl = result.secure_url;
+      fs.unlinkSync(req.files.image[0].path); // optional file cleanup
     }
-  });
+
+    const newCommunity = new Community({
+      name,
+      description,
+      image: imageUrl,
+      creator,
+      members: [creator],
+    });
+
+    await newCommunity.save();
+    res.status(201).json(newCommunity);
+  } catch (err) {
+    console.error("Create Community Error:", err);
+    res.status(500).json({ message: "Error creating community", error: err });
+  }
 };
 
-// Get all communities
+// ---------- Get All Communities ----------
 const getAllCommunities = async (req, res) => {
   try {
     const communities = await Community.find()
-      .populate("createdBy", "name")
-      .populate("members", "name");
-    console.log("Fetched Communities:", communities); // Debug log
+      .populate("creator", "username")
+      .populate("members", "username profilePic role expertProfile");
     res.status(200).json(communities);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching communities", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching communities", error: err });
   }
 };
 
-// Get a specific community by ID
-const getCommunityById = async (req, res) => {
+// ---------- Get Communities Joined by a User ----------
+const getUserCommunities = async (req, res) => {
+  const { userId } = req.params;
   try {
-    const community = await Community.findById(req.params.id)
-      .populate("createdBy", "name")
-      .populate("members", "name");
-    if (!community)
-      return res.status(404).json({ message: "Community not found" });
-    res.status(200).json(community);
-  } catch (error) {
+    const communities = await Community.find({ members: userId })
+      .populate("creator", "username")
+      .populate("members", "username profilePic");
+    res.status(200).json(communities);
+  } catch (err) {
     res
       .status(500)
-      .json({ message: "Error fetching community", error: error.message });
+      .json({ message: "Error fetching user communities", error: err });
   }
 };
 
-// Join a community
+// ---------- Join a Community ----------
 const joinCommunity = async (req, res) => {
-  try {
-    const { userId, communityId } = req.body;
-    const community = await Community.findById(communityId);
+  const { communityId, userId } = req.params;
 
+  try {
+    const community = await Community.findById(communityId);
     if (!community)
       return res.status(404).json({ message: "Community not found" });
 
     if (!community.members.includes(userId)) {
       community.members.push(userId);
       await community.save();
-      res.status(200).json({ message: "Joined community successfully" });
-    } else {
-      res.status(400).json({ message: "User already a member" });
     }
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error joining community", error: error.message });
+
+    res.status(200).json({ message: "Joined community", community });
+  } catch (err) {
+    res.status(500).json({ message: "Error joining community", error: err });
   }
 };
 
-// Leave a community
-const leaveCommunity = async (req, res) => {
-  try {
-    const { userId, communityId } = req.body;
-    const community = await Community.findById(communityId);
+// ---------- Leave a Community ----------
 
+const leaveCommunity = async (req, res) => {
+  const { communityId, userId } = req.params;
+
+  try {
+    const community = await Community.findById(communityId);
     if (!community)
       return res.status(404).json({ message: "Community not found" });
+
+    if (community.creator.toString() === userId)
+      return res
+        .status(403)
+        .json({ message: "Creator cannot leave their own community" });
 
     community.members = community.members.filter(
-      (member) => member.toString() !== userId
+      (memberId) => memberId.toString() !== userId
     );
+
     await community.save();
-    res.status(200).json({ message: "Left community successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error leaving community", error: error.message });
+    res.status(200).json({ message: "Left community", community });
+  } catch (err) {
+    res.status(500).json({ message: "Error leaving community", error: err });
   }
 };
 
-// Delete a community (Only the creator can delete it)
+// ---------- Delete Community ----------
 const deleteCommunity = async (req, res) => {
-  try {
-    const { communityId, userId } = req.body;
-    const community = await Community.findById(communityId);
+  const { communityId, userId } = req.params;
 
+  try {
+    const community = await Community.findById(communityId);
     if (!community)
       return res.status(404).json({ message: "Community not found" });
 
-    if (community.createdBy.toString() !== userId) {
+    if (community.creator.toString() !== userId)
       return res
         .status(403)
         .json({ message: "Only the creator can delete this community" });
-    }
 
-    await Community.findByIdAndDelete(communityId);
+    await community.deleteOne();
     res.status(200).json({ message: "Community deleted successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error deleting community", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting community", error: err });
   }
 };
 
 module.exports = {
+  upload: exports.upload,
   createCommunity,
   getAllCommunities,
-  getCommunityById,
+  getUserCommunities,
   joinCommunity,
   leaveCommunity,
   deleteCommunity,

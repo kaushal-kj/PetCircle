@@ -18,12 +18,11 @@ const userSchema = new mongoose.Schema(
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
-    // 🔹 Fields for "Expert" Role
-    // expertise: { type: String },
-    // expertiseCertificate: { type: String, default: "" }, // Cloudinary file URL
-
-    //  Link to Expert Profile (if user is an expert)
     expertProfile: { type: mongoose.Schema.Types.ObjectId, ref: "Expert" },
+
+    joinedCommunities: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Community" },
+    ],
   },
   { timestamps: true }
 );

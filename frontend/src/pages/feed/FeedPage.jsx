@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { format } from "timeago.js";
 import { FaHeart, FaRegHeart, FaRegCommentDots, FaShare } from "react-icons/fa";
 import { GiShare } from "react-icons/gi";
 import { Link, useNavigate } from "react-router-dom";
@@ -106,7 +107,7 @@ const FeedPage = () => {
       console.error("Error deleting comment:", error);
     }
   };
-  //new code
+
   const loggedInUserRole = localStorage.getItem("role"); // Get logged-in user's role
   const navigate = useNavigate();
 
@@ -169,9 +170,14 @@ const FeedPage = () => {
                   alt="User"
                   className="w-10 h-10 rounded-full cursor-pointer"
                 />
-                <p className="font-bold cursor-pointer">
-                  {post.author?.username}
-                </p>
+                <div>
+                  <p className="font-bold cursor-pointer">
+                    {post.author?.username}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {format(post.createdAt)}
+                  </p>
+                </div>
                 {/* </Link> */}
               </div>
 

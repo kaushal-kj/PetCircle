@@ -23,6 +23,10 @@ app.use(postRoutes);
 const communityRoutes = require("./src/routes/CommunityRoute");
 app.use(communityRoutes);
 
+//communityPostsRoutes
+const communityPostRoutes = require("./src/routes/CommunityPostRoute");
+app.use(communityPostRoutes);
+
 //adoptionRoutes
 const adoptionRoutes = require("./src/routes/AdoptionRoute");
 app.use(adoptionRoutes);

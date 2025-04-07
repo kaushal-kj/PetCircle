@@ -24,6 +24,7 @@ import ResetPassword from "./pages/common/ResetPassword";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import ViewExpertProfile from "./pages/expert/ViewExpertProfile";
 import ViewProfile from "./pages/profile/ViewProfile";
+import CommunityDetailsPage from "./pages/community/CommunityDetailsPage";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -43,6 +44,7 @@ function App() {
             <Route path="feeds/:id" element={<ViewProfile />} />
             <Route path="pets" element={<PetsPage />} />
             <Route path="communities" element={<CommunitiesPage />} />
+            <Route path="communities/:id" element={<CommunityDetailsPage />} />
             <Route path="adoptions" element={<AdoptionsPage />} />
             <Route path="experts" element={<ExpertsPage />} />
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
@@ -61,6 +63,7 @@ function App() {
             <Route path="profile/:id" element={<FullPostExpert />} />
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="communities" element={<CommunitiesPage />} />
+            <Route path="communities/:id" element={<CommunityDetailsPage />} />
             <Route path="adoptions" element={<AdoptionsPage />} />
           </Route>
         </Route>

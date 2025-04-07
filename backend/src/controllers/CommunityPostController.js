@@ -1,0 +1,157 @@
+const CommunityPost = require("../models/CommunityPostModel");
+const Community = require("../models/CommunityModel");
+const cloudinaryUtil = require("../utils/CloudinaryUtil");
+const fs = require("fs");
+const multer = require("multer");
+const path = require("path");
+
+// ---- Multer Setup ----
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "./uploads"),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + path.extname(file.originalname)),
+});
+exports.upload = multer({ storage }).fields([{ name: "image", maxCount: 1 }]);
+
+// ---- Create Community Post ----
+const createCommunityPost = async (req, res) => {
+  const { content, author, communityId } = req.body;
+
+  try {
+    const community = await Community.findById(communityId);
+    if (!community)
+      return res.status(404).json({ message: "Community not found" });
+
+    const isMember = community.members.includes(author);
+    if (!isMember)
+      return res.status(403).json({ message: "Only members can post" });
+
+    let imageUrl = "";
+    if (req.files?.image) {
+      const result = await cloudinaryUtil.uploadFileToCloudinary(
+        req.files.image[0]
+      );
+      imageUrl = result.secure_url;
+      fs.unlinkSync(req.files.image[0].path);
+    }
+
+    const newPost = new CommunityPost({
+      content,
+      image: imageUrl,
+      author,
+      community: communityId,
+    });
+
+    await newPost.save();
+    res.status(201).json(newPost);
+  } catch (err) {
+    console.error("Error creating post:", err);
+    res.status(500).json({ message: "Failed to create post", error: err });
+  }
+};
+
+// ---- Get All Posts in a Community ----
+const getCommunityPosts = async (req, res) => {
+  const { communityId } = req.params;
+
+  try {
+    const posts = await CommunityPost.find({ community: communityId })
+      .populate("author", "username profilePic role expertProfile")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching posts", error: err });
+  }
+};
+
+// ---- Delete Community Post ----
+const deleteCommunityPost = async (req, res) => {
+  const { postId, userId } = req.params;
+
+  try {
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (post.author.toString() !== userId)
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this post" });
+
+    await post.deleteOne();
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting post", error: err });
+  }
+};
+
+// ----- toggle like -----
+const toggleLike = async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const liked = post.likes.includes(userId);
+
+    if (liked) {
+      post.likes.pull(userId); // Remove like
+    } else {
+      post.likes.push(userId); // Add like
+    }
+
+    await post.save();
+    res.status(200).json({ message: liked ? "Unliked" : "Liked", post });
+  } catch (err) {
+    res.status(500).json({ message: "Error toggling like", error: err });
+  }
+};
+
+// ----- add comment -----
+const addComment = async (req, res) => {
+  const { postId } = req.params;
+  const { userId, text } = req.body;
+
+  try {
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    post.comments.push({ text, author: userId });
+    await post.save();
+
+    res.status(200).json({ message: "Comment added", post });
+  } catch (err) {
+    res.status(500).json({ message: "Error adding comment", error: err });
+  }
+};
+
+// ----- delete comment -----
+const deleteComment = async (req, res) => {
+  const { postId, commentId } = req.params;
+
+  try {
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    post.comments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    await post.save();
+    res.status(200).json({ message: "Comment deleted", post });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting comment", error: err });
+  }
+};
+
+module.exports = {
+  upload: exports.upload,
+  createCommunityPost,
+  getCommunityPosts,
+  deleteCommunityPost,
+  toggleLike,
+  addComment,
+  deleteComment,
+};
