@@ -75,6 +75,14 @@ const ExpertDashboard = () => {
             </li>
             <li>
               <Link
+                to="messages"
+                className="flex items-center p-2 hover:bg-gray-800 rounded"
+              >
+                <FaMessage className="mr-4 ml-1" /> Messages
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="adoptions"
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >

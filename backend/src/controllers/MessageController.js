@@ -1,5 +1,6 @@
 const ConversationModel = require("../models/ConversationModel");
 const MessageModel = require("../models/MessageModel");
+const { getReceiverSocketId, io } = require("../socket/Socket");
 
 const sendMessage = async (req, res) => {
   try {
@@ -29,6 +30,10 @@ const sendMessage = async (req, res) => {
     await Promise.all([conversation.save(), newMessage.save()]);
 
     //implement socket io for realtime data transfer
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(201).json({ message: "message sent", data: newMessage });
   } catch (error) {
@@ -38,12 +43,12 @@ const sendMessage = async (req, res) => {
 
 const getMessage = async (req, res) => {
   try {
-    const { senderId } = req.body;
-    const { receiverId } = req.params.id;
+    const senderId = req.query.senderId;
+    const receiverId = req.params.id;
 
-    const conversation = await ConversationModel.find({
+    const conversation = await ConversationModel.findOne({
       participants: { $all: [senderId, receiverId] },
-    });
+    }).populate("messages");
     if (!conversation) {
       return res.status(200).json({ success: true, messages: [] });
     }

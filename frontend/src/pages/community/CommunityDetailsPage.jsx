@@ -124,30 +124,21 @@ const CommunityDetailsPage = () => {
         text: comment,
       });
 
-      const newComment = res.data.comment || {
-        _id: res.data._id,
-        text: comment,
-        user: {
-          _id: userId,
-          username: localStorage.getItem("username"),
-          profilePic: localStorage.getItem("profilePic"),
-        },
-      };
+      const updatedPost = res.data.post;
 
-      setPosts((prev) =>
-        prev.map((post) =>
+      // Update only the specific post's comments
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
           post._id === postId
-            ? {
-                ...post,
-                comments: [...post.comments, newComment],
-              }
+            ? { ...post, comments: updatedPost.comments }
             : post
         )
       );
 
+      // Clear comment input for that post
       setCommentText((prev) => ({ ...prev, [postId]: "" }));
-    } catch (error) {
-      console.error("Failed to add comment:", error);
+    } catch (err) {
+      console.error("Error adding comment:", err);
     }
   };
 
@@ -434,17 +425,75 @@ const CommunityDetailsPage = () => {
                 {/* Comments Section (Only Opens When Clicked) */}
                 {/* Comment Modal */}
                 {openCommentPost === post._id && (
-                  <CommentModal
-                    isOpen={true}
-                    closeModal={() => setOpenCommentPost(null)}
-                    comments={post.comments}
-                    commentText={commentText}
-                    setCommentText={setCommentText}
-                    handleComment={handleAddComment}
-                    handleDeleteComment={handleDeleteComment}
-                    postId={post._id}
-                    userId={userId}
-                  />
+                  <div className="px-4 pb-4 space-y-3">
+                    {/* Existing comments */}
+                    <div className="max-h-52 overflow-y-auto pr-2 space-y-2">
+                      {post.comments.length > 0 ? (
+                        post.comments.map((comment) => (
+                          <div
+                            key={comment._id}
+                            className="flex justify-between bg-gray-100 p-2 rounded-lg"
+                          >
+                            <div className="flex items-start space-x-2">
+                              <img
+                                src={
+                                  comment.author?.profilePic ||
+                                  "https://via.placeholder.com/40"
+                                }
+                                alt="profile"
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                              <div>
+                                <p className="font-medium text-sm">
+                                  {comment.author?.username}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                  {comment.text}
+                                </p>
+                              </div>
+                            </div>
+
+                            {comment.author?._id === userId && (
+                              <button
+                                onClick={() =>
+                                  handleDeleteComment(post._id, comment._id)
+                                }
+                                className="text-xs text-red-500 hover:underline"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">
+                          No comments yet.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Add new comment */}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        placeholder="Write a comment..."
+                        value={commentText[post._id] || ""}
+                        onChange={(e) =>
+                          setCommentText((prev) => ({
+                            ...prev,
+                            [post._id]: e.target.value,
+                          }))
+                        }
+                        className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none"
+                      />
+                      <button
+                        onClick={() => handleAddComment(post._id)}
+                        className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm hover:bg-blue-600"
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             ))

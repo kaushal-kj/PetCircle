@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./pages/common/Home";
 import SignUp from "./pages/common/SignUp";
@@ -25,9 +25,29 @@ import ForgotPassword from "./pages/common/ForgotPassword";
 import ViewExpertProfile from "./pages/expert/ViewExpertProfile";
 import ViewProfile from "./pages/profile/ViewProfile";
 import CommunityDetailsPage from "./pages/community/CommunityDetailsPage";
+import ChatPage from "./pages/messages/ChatPage";
+
+import { socket } from "./socket";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
+  // useEffect(() => {
+  //   if (socket) {
+  //     console.log("Socket connected:", socket.id);
+  //   }
+  // }, []);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+
+  useEffect(() => {
+    socket.on("getOnlineUsers", (users) => {
+      console.log(users);
+
+      setOnlineUsers(users);
+    });
+
+    return () => socket.off("getOnlineUsers");
+  }, []);
+
   return (
     <Router>
       <Routes>
@@ -46,6 +66,10 @@ function App() {
             <Route path="communities" element={<CommunitiesPage />} />
             <Route path="communities/:id" element={<CommunityDetailsPage />} />
             <Route path="adoptions" element={<AdoptionsPage />} />
+            <Route
+              path="messages"
+              element={<ChatPage onlineUsers={onlineUsers} />}
+            />
             <Route path="experts" element={<ExpertsPage />} />
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="contests" element={<ContestsPage />} />
@@ -64,6 +88,10 @@ function App() {
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="communities" element={<CommunitiesPage />} />
             <Route path="communities/:id" element={<CommunityDetailsPage />} />
+            <Route
+              path="messages"
+              element={<ChatPage onlineUsers={onlineUsers} />}
+            />
             <Route path="adoptions" element={<AdoptionsPage />} />
           </Route>
         </Route>

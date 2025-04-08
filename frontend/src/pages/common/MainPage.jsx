@@ -11,6 +11,7 @@ import {
 import { FiLogOut } from "react-icons/fi";
 import { MdGridOn } from "react-icons/md";
 import axios from "axios";
+import { FaMessage } from "react-icons/fa6";
 
 const MainPage = () => {
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -75,6 +76,14 @@ const MainPage = () => {
                 className="flex items-center p-2 hover:bg-gray-800 rounded"
               >
                 <FaUsers className="mr-4 ml-1" /> Communities
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="messages"
+                className="flex items-center p-2 hover:bg-gray-800 rounded"
+              >
+                <FaMessage className="mr-4 ml-1" /> Messages
               </Link>
             </li>
             <li>

@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
 //express object
-const app = express();
+const { app, server } = require("./src/socket/Socket");
+// const app = express();
 app.use(cors());
 // express that accept json object
 app.use(express.json());
@@ -46,7 +47,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/PetCircle").then(() => {
 });
 
 //server port
-const port = process.env.PORT;
-app.listen(port, () => {
-  console.log("server started on port ", port);
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+  console.log("server started on port", port);
 });
