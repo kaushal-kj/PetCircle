@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 const cors = require("cors");
 //express object
 const app = express();
@@ -35,9 +36,9 @@ app.use(adoptionRoutes);
 const expertRoutes = require("./src/routes/ExpertRoute");
 app.use(expertRoutes);
 
-//contestRoutes
-const contestRoutes = require("./src/routes/ContestRoute");
-app.use(contestRoutes);
+//messageRoutes
+const messageRoutes = require("./src/routes/MessageRoute");
+app.use(messageRoutes);
 
 //database connection
 mongoose.connect("mongodb://127.0.0.1:27017/PetCircle").then(() => {
@@ -45,7 +46,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/PetCircle").then(() => {
 });
 
 //server port
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log("server started on port ", PORT);
+const port = process.env.PORT;
+app.listen(port, () => {
+  console.log("server started on port ", port);
 });

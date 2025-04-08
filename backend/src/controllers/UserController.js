@@ -272,7 +272,7 @@ const updateProfile = async (req, res) => {
       const { fullName, bio, expertise } = req.body;
       const updateData = { fullName, bio, expertise };
 
-      // ✅ Upload Profile Picture
+      //  Upload Profile Picture
       if (req.files?.profilePic) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
           req.files.profilePic[0]
@@ -280,7 +280,7 @@ const updateProfile = async (req, res) => {
         updateData.profilePic = cloudinaryResponse.secure_url;
       }
 
-      // ✅ Upload Expertise Certificate (Only for Experts)
+      //  Upload Expertise Certificate (Only for Experts)
       let certificateUrl = "";
       if (req.files?.expertiseCertificate) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
@@ -289,7 +289,7 @@ const updateProfile = async (req, res) => {
         certificateUrl = cloudinaryResponse.secure_url;
       }
 
-      // ✅ Ensure at least one field is updated
+      //  Ensure at least one field is updated
       if (
         !fullName &&
         !bio &&
@@ -302,7 +302,7 @@ const updateProfile = async (req, res) => {
           .json({ message: "At least one field must be updated" });
       }
 
-      // ✅ Update User Profile
+      //  Update User Profile
       const updatedUser = await UserModel.findByIdAndUpdate(
         req.params.id,
         updateData,
@@ -312,7 +312,7 @@ const updateProfile = async (req, res) => {
       if (!updatedUser)
         return res.status(404).json({ message: "User not found" });
 
-      // ✅ Update Expert Profile (Only If User is an Expert)
+      //  Update Expert Profile (Only If User is an Expert)
       if (updatedUser.role === "expert" && certificateUrl) {
         const updatedExpert = await ExpertModel.findOneAndUpdate(
           { user: req.params.id },

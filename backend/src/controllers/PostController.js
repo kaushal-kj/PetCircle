@@ -103,7 +103,7 @@ const getPostsByExpert = async (req, res) => {
   try {
     const { expertId } = req.params;
 
-    // 🔥 Fetch posts where author is the expertId
+    //  Fetch posts where author is the expertId
     const posts = await PostModel.find({ author: expertId }).sort({
       createdAt: -1,
     });
@@ -132,7 +132,7 @@ const deletePost = async (req, res) => {
   }
 };
 
-// ✅ Like or Unlike a Post
+//  Like or Unlike a Post
 const toggleLikePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -155,7 +155,7 @@ const toggleLikePost = async (req, res) => {
   }
 };
 
-// ✅ Add a Comment
+//  Add a Comment
 const addComment = async (req, res) => {
   try {
     const { postId } = req.params;

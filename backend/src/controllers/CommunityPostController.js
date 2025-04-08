@@ -94,16 +94,19 @@ const toggleLike = async (req, res) => {
     const post = await CommunityPost.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const liked = post.likes.includes(userId);
+    const likeIndex = post.likes.indexOf(userId);
+    let liked;
 
-    if (liked) {
-      post.likes.pull(userId); // Remove like
+    if (likeIndex === -1) {
+      post.likes.push(userId); // Like
+      liked = true;
     } else {
-      post.likes.push(userId); // Add like
+      post.likes.splice(likeIndex, 1); // Unlike
+      liked = false;
     }
 
     await post.save();
-    res.status(200).json({ message: liked ? "Unliked" : "Liked", post });
+    res.status(200).json({ message: liked ? "Liked" : "Unliked", liked, post });
   } catch (err) {
     res.status(500).json({ message: "Error toggling like", error: err });
   }

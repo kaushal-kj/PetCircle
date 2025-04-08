@@ -24,7 +24,7 @@ const FeedPage = () => {
       .catch((error) => console.error("Error fetching posts:", error));
   }, []);
 
-  //  Toggle Like (Fixing Bug)
+  //  Toggle Like
   const toggleLike = async (postId) => {
     try {
       const response = await axios.put(`/post/${postId}/like`, { userId });

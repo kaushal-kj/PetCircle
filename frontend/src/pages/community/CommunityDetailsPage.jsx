@@ -3,8 +3,9 @@ import axios from "axios";
 import { format } from "timeago.js";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { FaRegCommentDots, FaRegHeart } from "react-icons/fa";
+import { FaHeart, FaRegCommentDots, FaRegHeart } from "react-icons/fa";
 import { GiShare } from "react-icons/gi";
+import CommentModal from "../feed/CommentModal";
 
 const CommunityDetailsPage = () => {
   const { id } = useParams();
@@ -17,6 +18,9 @@ const CommunityDetailsPage = () => {
   const [showListModal, setShowListModal] = useState(false);
   const [listType, setListType] = useState("Members");
   const [listData, setListData] = useState([]);
+
+  const [commentText, setCommentText] = useState("");
+  const [openCommentPost, setOpenCommentPost] = useState(null);
 
   const userId = localStorage.getItem("id");
 
@@ -80,6 +84,97 @@ const CommunityDetailsPage = () => {
       } else {
         navigate(`/main/feeds/${profileId}`);
       }
+    }
+  };
+
+  //handle like in community posts
+  const handleLike = async (postId) => {
+    try {
+      await axios.put(`/community-posts/${postId}/like`, { userId });
+      setPosts((prev) =>
+        prev.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likes: post.likes.includes(userId)
+                  ? post.likes.filter((id) => id !== userId)
+                  : [...post.likes, userId],
+              }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error("Like failed:", err);
+    }
+  };
+
+  //  Open Comment Section
+  const openComments = (postId) => {
+    setOpenCommentPost(openCommentPost === postId ? null : postId); // Toggle comment section
+  };
+
+  //handle comment in commnity post
+  const handleAddComment = async (postId) => {
+    const comment = commentText[postId];
+    if (!comment?.trim()) return;
+
+    try {
+      const res = await axios.post(`/community-posts/${postId}/comment`, {
+        userId,
+        text: comment,
+      });
+
+      const newComment = res.data.comment || {
+        _id: res.data._id,
+        text: comment,
+        user: {
+          _id: userId,
+          username: localStorage.getItem("username"),
+          profilePic: localStorage.getItem("profilePic"),
+        },
+      };
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                comments: [...post.comments, newComment],
+              }
+            : post
+        )
+      );
+
+      setCommentText((prev) => ({ ...prev, [postId]: "" }));
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
+
+  //  Share Post
+  const handleShare = (postId) => {
+    navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
+    alert("Post link copied to clipboard!");
+  };
+
+  //handle delete comment
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      await axios.delete(`community-posts/${postId}/comment/${commentId}`);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                comments: post.comments.filter(
+                  (comment) => comment._id !== commentId
+                ),
+              }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -190,7 +285,7 @@ const CommunityDetailsPage = () => {
                   listData.map((person) => (
                     <div
                       key={person._id}
-                      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg transition"
+                      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
                       onClick={() =>
                         handleProfileClick(
                           person?._id,
@@ -244,27 +339,37 @@ const CommunityDetailsPage = () => {
                 className="bg-white w-1/2 shadow-md rounded-lg overflow-hidden mb-6"
               >
                 {/* Post Header */}
-                <div
-                  className="p-4 flex items-center space-x-4"
-                  onClick={() =>
-                    handleProfileClick(
-                      post?.author?._id,
-                      post?.author?.role,
-                      post?.author?.expertProfile,
-                      loggedInUserRole
-                    )
-                  }
-                >
+                <div className="p-4 flex items-center space-x-4">
                   <img
+                    onClick={() =>
+                      handleProfileClick(
+                        post?.author?._id,
+                        post?.author?.role,
+                        post?.author?.expertProfile,
+                        loggedInUserRole
+                      )
+                    }
                     src={
                       post.author?.profilePic ||
                       "https://via.placeholder.com/50"
                     }
                     alt="User"
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
                   />
                   <div>
-                    <p className="font-bold">{post.author?.username}</p>
+                    <p
+                      onClick={() =>
+                        handleProfileClick(
+                          post?.author?._id,
+                          post?.author?.role,
+                          post?.author?.expertProfile,
+                          loggedInUserRole
+                        )
+                      }
+                      className="font-bold cursor-pointer"
+                    >
+                      {post.author?.username}
+                    </p>
                     <p className="text-sm text-gray-500">
                       {format(post.createdAt)}
                     </p>
@@ -302,24 +407,45 @@ const CommunityDetailsPage = () => {
                   <p>{post.content}</p>
                 </div>
 
-                {/* Post Actions (optional placeholders for now) */}
-                <div className="px-4 pb-4 flex items-center justify-between text-gray-600">
-                  <div className="flex items-center space-x-4">
-                    <FaRegHeart className="text-2xl cursor-pointer" />
-                    <FaRegCommentDots className="text-2xl cursor-pointer" />
+                {/* Post Actions (Like, Comment, Share) */}
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleLike(post._id)}>
+                      {post.likes.includes(userId) ? (
+                        <FaHeart className="text-red-500 text-2xl" />
+                      ) : (
+                        <FaRegHeart className="text-2xl" />
+                      )}
+                    </button>
+                    <p className="mr-5 text-gray-600">
+                      {post.likes.length === 0 ? "" : post.likes.length}
+                    </p>
+                    <button onClick={() => openComments(post._id)}>
+                      <FaRegCommentDots className="text-2xl" />
+                    </button>
+                    <p className="mr-5 text-gray-600">
+                      {post.comments.length === 0 ? "" : post.comments.length}
+                    </p>
                   </div>
-                  <button
-                    onClick={() =>
-                      navigator.clipboard
-                        .writeText(
-                          `${window.location.origin}/community-post/${post._id}`
-                        )
-                        .then(() => alert("Post link copied to clipboard!"))
-                    }
-                  >
+                  <button onClick={() => handleShare(post._id)}>
                     <GiShare className="text-2xl" />
                   </button>
                 </div>
+                {/* Comments Section (Only Opens When Clicked) */}
+                {/* Comment Modal */}
+                {openCommentPost === post._id && (
+                  <CommentModal
+                    isOpen={true}
+                    closeModal={() => setOpenCommentPost(null)}
+                    comments={post.comments}
+                    commentText={commentText}
+                    setCommentText={setCommentText}
+                    handleComment={handleAddComment}
+                    handleDeleteComment={handleDeleteComment}
+                    postId={post._id}
+                    userId={userId}
+                  />
+                )}
               </div>
             ))
           ) : (
