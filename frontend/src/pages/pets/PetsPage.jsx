@@ -32,7 +32,12 @@ const PetsPage = () => {
 
     axios
       .get(`/pets?owner=${userId}`) // Fetch pets for the specific user
-      .then((response) => setPets(response.data.data))
+      .then((response) => {
+        const filteredPets = (response.data.data || []).filter(
+          (pet) => !pet.isRehomed
+        );
+        setPets(filteredPets);
+      })
       .catch((error) => console.error("Error fetching pets:", error))
       .finally(() => setLoading(false)); // Stop loader after fetching
   }, []);
@@ -81,6 +86,7 @@ const PetsPage = () => {
       formData.append("weight", data.weight || "N/A");
       formData.append("medicalHistory", data.medicalHistory || "N/A");
       formData.append("owner", userId); // Ensure owner ID is included
+      formData.append("isRehomed", "false");
 
       // Handle file upload
       if (data.image && data.image.length > 0) {
@@ -88,11 +94,11 @@ const PetsPage = () => {
       }
 
       if (editMode) {
-        await axios.put(`/pet/${currentPet._id}`, formData);
+        const response = await axios.put(`/pet/${currentPet._id}`, formData);
+        const updatedPet = response.data.data;
+
         setPets((prevPets) =>
-          prevPets.map((pet) =>
-            pet._id === currentPet._id ? { ...pet, ...data } : pet
-          )
+          prevPets.map((pet) => (pet._id === updatedPet._id ? updatedPet : pet))
         );
       } else {
         const response = await axios.post("/addPetWithFile", formData);

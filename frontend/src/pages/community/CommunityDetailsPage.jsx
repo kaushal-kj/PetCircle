@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaHeart, FaRegCommentDots, FaRegHeart } from "react-icons/fa";
 import { GiShare } from "react-icons/gi";
-import CommentModal from "../feed/CommentModal";
+import CommunityPostModal from "./CommunityPostModal";
 
 const CommunityDetailsPage = () => {
   const { id } = useParams();
@@ -19,8 +19,10 @@ const CommunityDetailsPage = () => {
   const [listType, setListType] = useState("Members");
   const [listData, setListData] = useState([]);
 
+  //comment section
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [openCommentPost, setOpenCommentPost] = useState(null);
 
   const userId = localStorage.getItem("id");
 
@@ -31,6 +33,16 @@ const CommunityDetailsPage = () => {
     formState: { isSubmitting },
   } = useForm();
 
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get(`/community-posts/${id}`);
+      setPosts(res.data);
+      // console.log(res.data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
@@ -40,16 +52,6 @@ const CommunityDetailsPage = () => {
         setIsMember(selected?.members?.some((m) => m._id === userId));
       } catch (error) {
         console.error("Error fetching community:", error);
-      }
-    };
-
-    const fetchPosts = async () => {
-      try {
-        const res = await axios.get(`/community-posts/${id}`);
-        setPosts(res.data);
-        // console.log(res.data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
       }
     };
 
@@ -109,36 +111,29 @@ const CommunityDetailsPage = () => {
   };
 
   //  Open Comment Section
-  const openComments = (postId) => {
-    setOpenCommentPost(openCommentPost === postId ? null : postId); // Toggle comment section
+  const openModal = (post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+    setCommentText("");
+    fetchPosts();
   };
 
   //handle comment in commnity post
-  const handleAddComment = async (postId) => {
-    const comment = commentText[postId];
-    if (!comment?.trim()) return;
-
+  const handleAddComment = async (postId, text) => {
     try {
       const res = await axios.post(`/community-posts/${postId}/comment`, {
-        userId,
-        text: comment,
+        userId: localStorage.getItem("id"),
+        text,
       });
-
-      const updatedPost = res.data.post;
-
-      // Update only the specific post's comments
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: updatedPost.comments }
-            : post
-        )
-      );
-
-      // Clear comment input for that post
-      setCommentText((prev) => ({ ...prev, [postId]: "" }));
-    } catch (err) {
-      console.error("Error adding comment:", err);
+      const updatedPost = res.data;
+      setSelectedPost(updatedPost);
+    } catch (error) {
+      console.error("Error adding comment:", error);
     }
   };
 
@@ -151,19 +146,13 @@ const CommunityDetailsPage = () => {
   //handle delete comment
   const handleDeleteComment = async (postId, commentId) => {
     try {
-      await axios.delete(`community-posts/${postId}/comment/${commentId}`);
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                comments: post.comments.filter(
-                  (comment) => comment._id !== commentId
-                ),
-              }
-            : post
-        )
+      const res = await axios.delete(
+        `/community-posts/${postId}/comment/${commentId}`
       );
+      const updatedPost = res.data;
+
+      // 🔁 Update post with new comment list + author populated
+      setSelectedPost(updatedPost);
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -326,7 +315,7 @@ const CommunityDetailsPage = () => {
           {posts.length > 0 ? (
             posts.map((post) => (
               <div
-                key={post._id}
+                key={post?._id}
                 className="bg-white w-1/2 shadow-md rounded-lg overflow-hidden mb-6"
               >
                 {/* Post Header */}
@@ -341,7 +330,7 @@ const CommunityDetailsPage = () => {
                       )
                     }
                     src={
-                      post.author?.profilePic ||
+                      post?.author?.profilePic ||
                       "https://via.placeholder.com/50"
                     }
                     alt="User"
@@ -359,13 +348,13 @@ const CommunityDetailsPage = () => {
                       }
                       className="font-bold cursor-pointer"
                     >
-                      {post.author?.username}
+                      {post?.author?.username}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {format(post.createdAt)}
+                      {format(post?.createdAt)}
                     </p>
                   </div>
-                  {post.author?._id === userId && (
+                  {post?.author?._id === userId && (
                     <button
                       className="ml-auto text-red-500 hover:text-red-700 text-sm"
                       onClick={async () => {
@@ -385,9 +374,9 @@ const CommunityDetailsPage = () => {
                 </div>
 
                 {/* Post Image */}
-                {post.image && (
+                {post?.image && (
                   <img
-                    src={post.image}
+                    src={post?.image}
                     alt="Post"
                     className="w-full h-[500px] object-cover"
                   />
@@ -395,27 +384,29 @@ const CommunityDetailsPage = () => {
 
                 {/* Post Content */}
                 <div className="p-4">
-                  <p>{post.content}</p>
+                  <p>{post?.content}</p>
                 </div>
 
                 {/* Post Actions (Like, Comment, Share) */}
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex space-x-2">
                     <button onClick={() => handleLike(post._id)}>
-                      {post.likes.includes(userId) ? (
+                      {post?.likes.includes(userId) ? (
                         <FaHeart className="text-red-500 text-2xl" />
                       ) : (
                         <FaRegHeart className="text-2xl" />
                       )}
                     </button>
                     <p className="mr-5 text-gray-600">
-                      {post.likes.length === 0 ? "" : post.likes.length}
+                      {post?.likes?.length === 0 ? "" : post?.likes?.length}
                     </p>
-                    <button onClick={() => openComments(post._id)}>
+                    <button onClick={() => openModal(post)}>
                       <FaRegCommentDots className="text-2xl" />
                     </button>
                     <p className="mr-5 text-gray-600">
-                      {post.comments.length === 0 ? "" : post.comments.length}
+                      {post?.comments?.length === 0
+                        ? ""
+                        : post?.comments?.length}
                     </p>
                   </div>
                   <button onClick={() => handleShare(post._id)}>
@@ -424,76 +415,17 @@ const CommunityDetailsPage = () => {
                 </div>
                 {/* Comments Section (Only Opens When Clicked) */}
                 {/* Comment Modal */}
-                {openCommentPost === post._id && (
-                  <div className="px-4 pb-4 space-y-3">
-                    {/* Existing comments */}
-                    <div className="max-h-52 overflow-y-auto pr-2 space-y-2">
-                      {post.comments.length > 0 ? (
-                        post.comments.map((comment) => (
-                          <div
-                            key={comment._id}
-                            className="flex justify-between bg-gray-100 p-2 rounded-lg"
-                          >
-                            <div className="flex items-start space-x-2">
-                              <img
-                                src={
-                                  comment.author?.profilePic ||
-                                  "https://via.placeholder.com/40"
-                                }
-                                alt="profile"
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                              <div>
-                                <p className="font-medium text-sm">
-                                  {comment.author?.username}
-                                </p>
-                                <p className="text-sm text-gray-700">
-                                  {comment.text}
-                                </p>
-                              </div>
-                            </div>
-
-                            {comment.author?._id === userId && (
-                              <button
-                                onClick={() =>
-                                  handleDeleteComment(post._id, comment._id)
-                                }
-                                className="text-xs text-red-500 hover:underline"
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-sm">
-                          No comments yet.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Add new comment */}
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        placeholder="Write a comment..."
-                        value={commentText[post._id] || ""}
-                        onChange={(e) =>
-                          setCommentText((prev) => ({
-                            ...prev,
-                            [post._id]: e.target.value,
-                          }))
-                        }
-                        className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none"
-                      />
-                      <button
-                        onClick={() => handleAddComment(post._id)}
-                        className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm hover:bg-blue-600"
-                      >
-                        Post
-                      </button>
-                    </div>
-                  </div>
+                {selectedPost && (
+                  <CommunityPostModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    post={selectedPost}
+                    commentText={commentText}
+                    setCommentText={setCommentText}
+                    handleAddComment={handleAddComment}
+                    handleDeleteComment={handleDeleteComment}
+                    userId={localStorage.getItem("id")}
+                  />
                 )}
               </div>
             ))

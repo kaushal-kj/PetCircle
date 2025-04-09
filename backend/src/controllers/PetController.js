@@ -3,6 +3,7 @@ const User = require("../models/UserModel"); // Import User model
 const cloudinaryUtil = require("../utils/CloudinaryUtil");
 const path = require("path");
 const multer = require("multer");
+const AdoptionModel = require("../models/AdoptionModel");
 
 // Multer Storage Engine
 const storage = multer.diskStorage({
@@ -44,7 +45,7 @@ const getPetById = async (req, res) => {
   try {
     const pet = await PetModel.findById(req.params.id).populate(
       "owner",
-      "username email"
+      "username email phoneNumber"
     );
     if (!pet) {
       return res.status(404).json({ message: "Pet not found" });
@@ -72,22 +73,56 @@ const getAllPets = async (req, res) => {
 };
 
 // ✅ Update Pet by ID
-const updatePet = async (req, res) => {
-  try {
-    const updatedPet = await PetModel.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedPet) {
-      return res.status(404).json({ message: "Pet not found" });
+// const updatePet = async (req, res) => {
+//   try {
+//     const updatedPet = await PetModel.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
+//     if (!updatedPet) {
+//       return res.status(404).json({ message: "Pet not found" });
+//     }
+//     res
+//       .status(200)
+//       .json({ message: "Pet updated successfully", data: updatedPet });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error updating pet", error });
+//   }
+// };
+
+const updatePet = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ message: "File upload error", error: err });
     }
-    res
-      .status(200)
-      .json({ message: "Pet updated successfully", data: updatedPet });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating pet", error });
-  }
+
+    try {
+      const petId = req.params.id;
+      const updateData = req.body;
+
+      // Handle image file upload if present
+      if (req.file) {
+        const result = await cloudinaryUtil.uploadFileToCloudinary(req.file);
+        updateData.photos = [result.secure_url];
+      }
+
+      const updatedPet = await PetModel.findByIdAndUpdate(petId, updateData, {
+        new: true,
+      });
+
+      if (!updatedPet) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+
+      res
+        .status(200)
+        .json({ message: "Pet updated successfully", data: updatedPet });
+    } catch (error) {
+      console.error("Error updating pet:", error);
+      res.status(500).json({ message: "Error updating pet", error });
+    }
+  });
 };
 
 // ✅ Delete Pet by ID (Remove from User's `pets` Array)
@@ -100,6 +135,9 @@ const deletePet = async (req, res) => {
 
     // Remove pet ID from owner's pets array
     await User.findByIdAndUpdate(pet.owner, { $pull: { pets: pet._id } });
+
+    //  Delete related adoption post (if any)
+    await AdoptionModel.deleteOne({ pet: pet._id });
 
     // Delete pet from database
     await PetModel.findByIdAndDelete(req.params.id);
@@ -117,7 +155,21 @@ const addPetWithFile = async (req, res) => {
       return res.status(500).json({ message: err.message });
     }
     try {
-      const { owner } = req.body;
+      const { owner, name, breed, age, weight, medicalHistory, isRehomed } =
+        req.body;
+
+      //changes start
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Image is required" });
+      }
+
+      if (!owner || !name || !breed || !age) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      //changes end
 
       // Ensure owner exists
       const user = await User.findById(owner);
@@ -131,13 +183,27 @@ const addPetWithFile = async (req, res) => {
       );
 
       // Store pet data in database
-      req.body.photos = [cloudinaryResponse.secure_url];
-      const savedPet = await PetModel.create(req.body);
+      // req.body.photos = [cloudinaryResponse.secure_url];
+      // const savedPet = await PetModel.create(req.body);
+
+      const newPet = new PetModel({
+        name,
+        breed,
+        age,
+        weight,
+        medicalHistory,
+        isRehomed,
+        owner,
+        photos: [cloudinaryResponse.secure_url],
+      });
+
+      const savedPet = await newPet.save();
 
       // Add pet ID to user's pets array
-      user.pets.push(savedPet._id);
-      await user.save();
-
+      if (!isRehomed || isRehomed === "false") {
+        user.pets.push(savedPet._id);
+        await user.save();
+      }
       res
         .status(200)
         .json({ message: "Pet saved successfully", data: savedPet });

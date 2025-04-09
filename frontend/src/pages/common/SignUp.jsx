@@ -47,16 +47,13 @@ const SignUp = () => {
       validate: (value) =>
         value === watch("password") || "Passwords do not match",
     },
-    phoneNumber:
-      selectedRole === "petOwner"
-        ? {
-            required: "Phone Number is required",
-            pattern: {
-              value: /^[0-9]{10}$/,
-              message: "Phone Number must be 10 digits",
-            },
-          }
-        : {},
+    phoneNumber: {
+      required: "Phone Number is required",
+      pattern: {
+        value: /^[0-9]{10}$/,
+        message: "Phone Number must be 10 digits",
+      },
+    },
 
     dateOfBirth:
       selectedRole === "petOwner"
@@ -192,16 +189,16 @@ const SignUp = () => {
               placeholder="Confirm Password"
               className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
             />
+            <input
+              type="tel"
+              {...register("phoneNumber", validationRules.phoneNumber)}
+              placeholder="Phone Number"
+              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
+            />
 
             {/* Pet Owner Fields */}
             {selectedRole === "petOwner" && (
               <>
-                <input
-                  type="tel"
-                  {...register("phoneNumber", validationRules.phoneNumber)}
-                  placeholder="Phone Number"
-                  className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded"
-                />
                 <input
                   type="date"
                   {...register("dateOfBirth", validationRules.dateOfBirth)}

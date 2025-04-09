@@ -57,6 +57,7 @@ const getCommunityPosts = async (req, res) => {
   try {
     const posts = await CommunityPost.find({ community: communityId })
       .populate("author", "username profilePic role expertProfile")
+      .populate("comments.author", "username") // populate comment authors
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
@@ -113,39 +114,82 @@ const toggleLike = async (req, res) => {
 };
 
 // ----- add comment -----
+// const addComment = async (req, res) => {
+//   const { postId } = req.params;
+//   const { userId, text } = req.body;
+
+//   try {
+//     const post = await CommunityPost.findById(postId);
+//     if (!post) return res.status(404).json({ message: "Post not found" });
+
+//     post.comments.push({ text, author: userId });
+//     await post.save();
+
+//     res.status(200).json({ message: "Comment added", post });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error adding comment", error: err });
+//   }
+// };
 const addComment = async (req, res) => {
   const { postId } = req.params;
-  const { userId, text } = req.body;
+  const { text, userId } = req.body;
 
   try {
     const post = await CommunityPost.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
     post.comments.push({ text, author: userId });
     await post.save();
 
-    res.status(200).json({ message: "Comment added", post });
+    const updatedPost = await CommunityPost.findById(postId)
+      .populate("author", "username")
+      .populate("comments.author", "username");
+
+    res.status(200).json(updatedPost);
   } catch (err) {
-    res.status(500).json({ message: "Error adding comment", error: err });
+    res.status(500).json({ error: err.message });
   }
 };
 
 // ----- delete comment -----
+// const deleteComment = async (req, res) => {
+//   const { postId, commentId } = req.params;
+
+//   try {
+//     const post = await CommunityPost.findById(postId);
+//     if (!post) return res.status(404).json({ message: "Post not found" });
+
+//     post.comments = post.comments.filter(
+//       (comment) => comment._id.toString() !== commentId
+//     );
+
+//     await post.save();
+//     res.status(200).json({ message: "Comment deleted", post });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error deleting comment", error: err });
+//   }
+// };
+
 const deleteComment = async (req, res) => {
   const { postId, commentId } = req.params;
 
   try {
     const post = await CommunityPost.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (!post) return res.status(404).json({ error: "Post not found" });
 
     post.comments = post.comments.filter(
       (comment) => comment._id.toString() !== commentId
     );
 
     await post.save();
-    res.status(200).json({ message: "Comment deleted", post });
+
+    // 👉 Fetch updated post with populated authors
+    const updatedPost = await CommunityPost.findById(postId)
+      .populate("author", "username")
+      .populate("comments.author", "username");
+
+    res.status(200).json(updatedPost);
   } catch (err) {
-    res.status(500).json({ message: "Error deleting comment", error: err });
+    res.status(500).json({ error: err.message });
   }
 };
 

@@ -1,13 +1,14 @@
 const express = require("express");
-const router = express.Router();
 const {
-  createAdoptionRequest,
+  createAdoption,
   getAllAdoptions,
-  getAdoptionById,
+  deleteAdoption,
 } = require("../controllers/AdoptionController");
 
-router.post("/adoption", createAdoptionRequest);
-router.get("/adoptions", getAllAdoptions);
-router.get("/adoption/:id", getAdoptionById);
+const router = express.Router();
+
+router.post("/adoption/create", createAdoption); // Create adoption
+router.get("/adoptions", getAllAdoptions); // Get all
+router.delete("/adoption/:id", deleteAdoption); // Delete by ID
 
 module.exports = router;

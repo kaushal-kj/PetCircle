@@ -9,6 +9,11 @@ const petSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   photos: [{ type: String }],
   milestones: [{ type: String }],
+
+  // New fields
+  isAvailableForAdoption: { type: Boolean, default: false },
+  isAdopted: { type: Boolean, default: false },
+  isRehomed: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("Pet", petSchema);

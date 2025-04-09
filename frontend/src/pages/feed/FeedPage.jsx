@@ -75,7 +75,7 @@ const FeedPage = () => {
         )
       );
       setCommentText(""); // Clear input
-      setOpenCommentPost(null); // Close comment box after submitting
+      // setOpenCommentPost(null); // Close comment box after submitting
     } catch (error) {
       console.error("Error adding comment:", error);
     }
@@ -238,6 +238,7 @@ const FeedPage = () => {
                   handleDeleteComment={handleDeleteComment}
                   postId={post._id}
                   userId={userId}
+                  postImage={post.photos}
                 />
               )}
             </div>

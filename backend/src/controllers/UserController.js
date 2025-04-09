@@ -28,7 +28,15 @@ const upload = multer({ storage: storage }).fields([
 const signup = async (req, res) => {
   try {
     // console.log("Request Body:", req.body);
-    const { fullName, username, email, password, role, expertise } = req.body;
+    const {
+      fullName,
+      username,
+      email,
+      password,
+      role,
+      expertise,
+      phoneNumber,
+    } = req.body;
 
     // Check if fullName is provided
     if (!fullName) {
@@ -50,6 +58,7 @@ const signup = async (req, res) => {
       fullName,
       username,
       email,
+      phoneNumber,
       password: hashedPassword,
       role: role || "petOwner",
     });
