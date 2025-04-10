@@ -90,7 +90,7 @@ const CommentModal = ({
                       onClick={() => handleDeleteComment(postId, comment._id)}
                       className="text-red-400 hover:text-red-600 ml-2"
                     >
-                      <MdDelete className="text-2xl" />
+                      <MdDelete className="text-2xl cursor-pointer" />
                     </button>
                   )}
                 </div>

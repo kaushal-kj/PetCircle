@@ -216,11 +216,23 @@ const ViewExpertProfile = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg">
             <h2 className="text-xl font-bold mb-4">Expertise Certificate</h2>
-            <img
-              src={expert?.expertiseCertificate}
-              alt="Certificate"
-              className="w-full h-[500px] rounded-md"
-            />
+            <object
+              data={expert?.expertiseCertificate}
+              type="application/pdf"
+              width="100%"
+              height="500px"
+            >
+              <p>
+                PDF cannot be displayed.{" "}
+                <a
+                  href={expert?.expertiseCertificate}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Click here to download.
+                </a>
+              </p>
+            </object>
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setShowCertificateModal(false)}

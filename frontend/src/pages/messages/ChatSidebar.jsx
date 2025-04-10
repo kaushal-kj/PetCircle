@@ -5,6 +5,7 @@ import { socket } from "../../socket";
 
 const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     axios
@@ -14,23 +15,7 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
       );
   }, []);
 
-  // useEffect(() => {
-  //   if (!socket) return;
-
-  //   socket.on("userStatusChanged", ({ userId, isOnline, lastSeen }) => {
-  //     setUsers((prevUsers) =>
-  //       prevUsers.map((user) =>
-  //         user._id === userId
-  //           ? { ...user, isOnline, lastSeen: lastSeen || user.lastSeen }
-  //           : user
-  //       )
-  //     );
-  //   });
-
-  //   return () => socket.off("userStatusChanged");
-  // }, []);
-
-  // ✅ Real-time update of last message on receiving newMessage
+  // Real-time update of last message on receiving newMessage
   useEffect(() => {
     if (!socket) return;
 
@@ -44,7 +29,7 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
             return {
               ...u,
               lastMessage: newMessage.message,
-              lastSeen: newMessage.createdAt,
+              lastMessageTime: newMessage.createdAt,
               lastMessageSender: newMessage.senderId,
               seen: newMessage.seen,
             };
@@ -70,31 +55,44 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
   useEffect(() => {
     axios
       .get(`/users/with-chat-meta?currentUserId=${currentUserId}`)
-      .then((res) => setUsers(res.data.data))
+      .then((res) =>
+        setUsers(res.data.data.filter((u) => u._id !== currentUserId))
+      )
       .catch((err) => console.error("Error fetching users:", err));
-  }, []);
+  }, [currentUserId]);
 
-  const getLastMessagePreview = (user, currentUserId) => {
-    if (!user.lastMessage) return "No messages yet";
-    const isSentByYou = user.lastMessageSender === currentUserId;
-    return `${isSentByYou ? "You: " : ""}${user.lastMessage}`;
-  };
-
-  const getLastSeenTime = (user) => {
-    if (user.isOnline) return "Online";
-    if (!user.lastSeen) return "A while ago";
-    return moment(user.lastSeen).fromNow(); // e.g. "5 minutes ago"
-  };
+  const filteredUsers = users.filter((user) =>
+    `${user.fullName} ${user.username}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    return new Date(b.lastMessageTime) - new Date(a.lastMessageTime);
+  });
 
   const isUserOnline = (userId) => onlineUsers.includes(userId);
 
   return (
-    <div className="w-[95%] bg-white h-[85%] shadow-md overflow-y-auto">
+    <div className="w-[95%] bg-white h-[90%] shadow-md overflow-y-auto">
+      {/* Search bar */}
+      <div className="p-4">
+        <input
+          type="text"
+          placeholder="Search users..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      {/* filtered user list */}
       <div className="flex-1 overflow-y-auto">
-        {users.map((user) => (
+        {sortedUsers.map((user) => (
           <div
             key={user._id}
-            onClick={() => onSelectUser(user)}
+            onClick={() => {
+              onSelectUser(user);
+              setSearchTerm("");
+            }}
             className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-100"
           >
             {/* Profile Pic with Online Dot */}
@@ -117,16 +115,20 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
                 <span className="text-sm font-semibold">{user.fullName}</span>
                 <span className="text-xs text-gray-500">
                   {/* {getLastSeenTime(user)} */}
-                  {user.lastSeen && user.lastMessage
-                    ? moment(user.lastSeen).format("hh:mm A")
-                    : ""}{" "}
+                  {user.lastMessage && user.lastMessageTime
+                    ? moment(user.lastMessageTime).format("hh:mm A")
+                    : ""}
                 </span>
               </div>
               <span className="text-sm text-gray-500 truncate">
                 {/* {getLastMessagePreview(user, currentUserId)} */}
                 {user.lastMessageSender === currentUserId
-                  ? `You: ${user.lastMessage}`
-                  : user.lastMessage}
+                  ? `You: ${user.lastMessage?.slice(0, 20)}${
+                      user.lastMessage?.length > 20 ? "..." : ""
+                    }`
+                  : `${user.lastMessage?.slice(0, 20)}${
+                      user.lastMessage?.length > 20 ? "..." : ""
+                    }`}
               </span>
             </div>
           </div>

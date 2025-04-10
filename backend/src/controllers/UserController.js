@@ -20,7 +20,34 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).fields([
+const fileFilter = (req, file, cb) => {
+  if (file.fieldname === "profilePic") {
+    // Accept image files only for profilePic
+    if (
+      file.mimetype === "image/jpeg" ||
+      file.mimetype === "image/png" ||
+      file.mimetype === "image/webp"
+    ) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error("Only JPEG/PNG/WEBP images are allowed for profile picture"),
+        false
+      );
+    }
+  } else if (file.fieldname === "expertiseCertificate") {
+    // Accept only PDF for expertiseCertificate
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed for certificate"), false);
+    }
+  } else {
+    cb(new Error("Invalid file field"), false);
+  }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter }).fields([
   { name: "profilePic", maxCount: 1 },
   { name: "expertiseCertificate", maxCount: 1 },
 ]);
@@ -294,7 +321,8 @@ const updateProfile = async (req, res) => {
       let certificateUrl = "";
       if (req.files?.expertiseCertificate) {
         const cloudinaryResponse = await cloudinaryUtil.uploadFileToCloudinary(
-          req.files.expertiseCertificate[0]
+          req.files.expertiseCertificate[0],
+          "raw"
         );
         certificateUrl = cloudinaryResponse.secure_url;
       }
@@ -613,8 +641,9 @@ const getUsersWithChatMeta = async (req, res) => {
         return {
           ...user.toObject(),
           lastMessage: lastMsg?.message || "",
+          lastMessageTime: lastMsg?.createdAt || null,
           lastMessageSender: lastMsg?.senderId?.toString(), // add this line
-          lastSeen: user.updatedAt, // or customize as needed
+          lastSeen: lastMsg?.seen, // or customize as needed
         };
       })
     );

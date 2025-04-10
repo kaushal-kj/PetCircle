@@ -96,6 +96,7 @@ const EditExpertProfile = () => {
         <label className="block font-semibold">Expertise Certificate</label>
         <input
           type="file"
+          accept="application/pdf"
           onChange={(e) => setExpertiseCertificate(e.target.files[0])}
           className="w-full px-4 py-2 border rounded mb-2"
         />

@@ -1,4 +1,5 @@
 import React from "react";
+import { MdDelete } from "react-icons/md";
 
 const AdoptionCard = ({ pet, onDelete }) => {
   const isEmail =
@@ -25,7 +26,7 @@ const AdoptionCard = ({ pet, onDelete }) => {
               onClick={onDelete}
               className="text-red-500 hover:text-red-700"
             >
-              🗑
+              <MdDelete className="text-2xl cursor-pointer" />
             </button>
           )}
         </div>

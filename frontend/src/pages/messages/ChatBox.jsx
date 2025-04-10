@@ -9,6 +9,12 @@ const ChatBox = ({ currentUserId, receiver }) => {
   const [newMsg, setNewMsg] = useState("");
   const bottomRef = useRef();
   const [showPicker, setShowPicker] = useState(false);
+  const inputRef = useRef();
+  useEffect(() => {
+    if (receiver) {
+      inputRef.current?.focus();
+    }
+  }, [receiver]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -170,6 +176,7 @@ const ChatBox = ({ currentUserId, receiver }) => {
         </div>
 
         <input
+          ref={inputRef}
           type="text"
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}

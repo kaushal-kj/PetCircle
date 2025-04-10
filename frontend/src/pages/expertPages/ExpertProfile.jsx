@@ -35,7 +35,10 @@ const ExpertProfile = () => {
     if (userId) {
       axios
         .get(`/user/${userId}`)
-        .then((response) => setUser(response.data.data))
+        .then((response) => {
+          setUser(response.data.data);
+          // console.log(response.data.data);
+        })
         .catch((error) => console.error("Error fetching user:", error));
 
       axios
@@ -211,11 +214,23 @@ const ExpertProfile = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg">
             <h2 className="text-xl font-bold mb-4">Expertise Certificate</h2>
-            <img
-              src={user.expertProfile.expertiseCertificate}
-              alt="Certificate"
-              className="w-full h-[500px] rounded-md"
-            />
+            <object
+              data={user?.expertProfile?.expertiseCertificate}
+              type="application/pdf"
+              width="100%"
+              height="500px"
+            >
+              <p>
+                PDF cannot be displayed.{" "}
+                <a
+                  href={user?.expertProfile?.expertiseCertificate}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Click here to download.
+                </a>
+              </p>
+            </object>
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setShowCertificateModal(false)}
