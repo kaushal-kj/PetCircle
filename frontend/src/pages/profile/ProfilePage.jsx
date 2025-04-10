@@ -118,7 +118,7 @@ const ProfilePage = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <img
-            src={user.profilePic || "https://via.placeholder.com/150"}
+            src={user.profilePic}
             alt="Profile"
             className="w-24 h-24 rounded-full border"
           />

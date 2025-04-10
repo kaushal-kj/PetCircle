@@ -57,7 +57,7 @@ const getCommunityPosts = async (req, res) => {
   try {
     const posts = await CommunityPost.find({ community: communityId })
       .populate("author", "username profilePic role expertProfile")
-      .populate("comments.author", "username") // populate comment authors
+      .populate("comments.author", "username profilePic") // populate comment authors
       .sort({ createdAt: -1 });
 
     res.status(200).json(posts);
@@ -141,7 +141,7 @@ const addComment = async (req, res) => {
 
     const updatedPost = await CommunityPost.findById(postId)
       .populate("author", "username")
-      .populate("comments.author", "username");
+      .populate("comments.author", "username profilePic");
 
     res.status(200).json(updatedPost);
   } catch (err) {
@@ -182,10 +182,10 @@ const deleteComment = async (req, res) => {
 
     await post.save();
 
-    // 👉 Fetch updated post with populated authors
+    //  Fetch updated post with populated authors
     const updatedPost = await CommunityPost.findById(postId)
       .populate("author", "username")
-      .populate("comments.author", "username");
+      .populate("comments.author", "username profilePic");
 
     res.status(200).json(updatedPost);
   } catch (err) {

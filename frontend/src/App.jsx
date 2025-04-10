@@ -31,17 +31,12 @@ import { socket } from "./socket";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
-  // useEffect(() => {
-  //   if (socket) {
-  //     console.log("Socket connected:", socket.id);
-  //   }
-  // }, []);
+
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
     socket.on("getOnlineUsers", (users) => {
-      console.log(users);
-
+      // console.log(users);
       setOnlineUsers(users);
     });
 
@@ -70,6 +65,10 @@ function App() {
               path="messages"
               element={<ChatPage onlineUsers={onlineUsers} />}
             />
+            <Route
+              path="messages/:userId"
+              element={<ChatPage onlineUsers={onlineUsers} />}
+            />
             <Route path="experts" element={<ExpertsPage />} />
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="contests" element={<ContestsPage />} />
@@ -90,6 +89,10 @@ function App() {
             <Route path="communities/:id" element={<CommunityDetailsPage />} />
             <Route
               path="messages"
+              element={<ChatPage onlineUsers={onlineUsers} />}
+            />
+            <Route
+              path="messages/:userId"
               element={<ChatPage onlineUsers={onlineUsers} />}
             />
             <Route path="adoptions" element={<AdoptionPage />} />

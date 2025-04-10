@@ -132,6 +132,7 @@ const CommunityDetailsPage = () => {
       });
       const updatedPost = res.data;
       setSelectedPost(updatedPost);
+      setCommentText("");
     } catch (error) {
       console.error("Error adding comment:", error);
     }
@@ -171,6 +172,15 @@ const CommunityDetailsPage = () => {
       reset();
     } catch (error) {
       console.error("Failed to create post:", error);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await axios.delete(`/community-posts/${postId}/${userId}`);
+      setPosts((prev) => prev.filter((p) => p._id !== postId));
+    } catch (err) {
+      console.error("Failed to delete post:", err);
     }
   };
 
@@ -357,16 +367,7 @@ const CommunityDetailsPage = () => {
                   {post?.author?._id === userId && (
                     <button
                       className="ml-auto text-red-500 hover:text-red-700 text-sm"
-                      onClick={async () => {
-                        try {
-                          await axios.delete(`/community-posts/${post._id}`);
-                          setPosts((prev) =>
-                            prev.filter((p) => p._id !== post._id)
-                          );
-                        } catch (err) {
-                          console.error("Failed to delete post:", err);
-                        }
-                      }}
+                      onClick={() => handleDeletePost(post._id)}
                     >
                       Delete
                     </button>

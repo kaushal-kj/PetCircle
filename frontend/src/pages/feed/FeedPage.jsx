@@ -239,6 +239,7 @@ const FeedPage = () => {
                   postId={post._id}
                   userId={userId}
                   postImage={post.photos}
+                  post={post}
                 />
               )}
             </div>

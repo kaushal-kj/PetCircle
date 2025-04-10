@@ -14,7 +14,8 @@ const userSchema = new mongoose.Schema(
     pets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }],
     profilePic: { type: String, default: "https://via.placeholder.com/150" },
     bio: { type: String, default: "" },
-    phoneNumber: { type: String, required: true },
+    phoneNumber: { type: String },
+    dateOfBirth: { type: Date },
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -24,6 +25,9 @@ const userSchema = new mongoose.Schema(
     joinedCommunities: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Community" },
     ],
+
+    lastSeen: { type: Date },
+    isOnline: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -17,4 +17,6 @@ routes.post("/user/unfollow", userController.unfollowUser);
 routes.get("/user/:id/followers", userController.getFollowers);
 routes.get("/user/:id/following", userController.getFollowing);
 
+//fetch users with last message and last seen
+routes.get("/users/with-chat-meta", userController.getUsersWithChatMeta);
 module.exports = routes;

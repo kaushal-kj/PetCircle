@@ -61,4 +61,37 @@ const getMessage = async (req, res) => {
   }
 };
 
-module.exports = { sendMessage, getMessage };
+// Mark messages as seen
+const markMessagesAsSeen = async (req, res) => {
+  try {
+    const { receiverId } = req.params; // the one whose messages we are marking as seen
+    const { senderId } = req.body; // the one who opened the chat
+
+    const updated = await MessageModel.updateMany(
+      {
+        senderId: receiverId,
+        receiverId: senderId,
+        seen: false,
+      },
+      { $set: { seen: true } }
+    );
+
+    // Notify sender via socket that their messages were seen
+    const senderSocketId = getReceiverSocketId(receiverId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messagesSeen", {
+        by: senderId,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Messages marked as seen",
+      updatedCount: updated.modifiedCount,
+    });
+  } catch (error) {
+    console.error("Error marking messages as seen:", error);
+    return res.status(500).json({ error: "Failed to mark messages as seen" });
+  }
+};
+
+module.exports = { sendMessage, getMessage, markMessagesAsSeen };

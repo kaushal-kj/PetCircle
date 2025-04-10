@@ -30,6 +30,16 @@ const ViewExpertProfile = () => {
 
   // const userId = localStorage.getItem("id"); // Get logged-in expert ID
   const navigate = useNavigate();
+  const handleMessage = () => {
+    const role = localStorage.getItem("role"); // "petOwner" or "expert"
+
+    if (role === "expert") {
+      navigate(`/expert/messages/${expert?.user?._id}`);
+    } else {
+      navigate(`/main/messages/${expert?.user?._id}`);
+    }
+    // navigate(`/main/messages/${expert?.user?._id}`); // navigate to the chat page with that user
+  };
 
   useEffect(() => {
     if (expertId) {
@@ -180,16 +190,24 @@ const ViewExpertProfile = () => {
 
         {/* Show Follow/Unfollow button if NOT viewing own profile */}
         {loggedInUserId !== expert?.user?._id && (
-          <button
-            onClick={handleFollowToggle}
-            className={`px-4 py-1 rounded-md ${
-              isFollowing
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            {isFollowing ? "Unfollow" : "Follow"}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleFollowToggle}
+              className={`px-4 py-1 rounded-md ${
+                isFollowing
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
+            </button>
+            <button
+              onClick={handleMessage}
+              className="bg-gray-700 text-white px-4 py-1 rounded-md hover:bg-gray-800"
+            >
+              Message
+            </button>
+          </div>
         )}
       </div>
 

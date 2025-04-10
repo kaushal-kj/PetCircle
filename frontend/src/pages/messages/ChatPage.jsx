@@ -1,69 +1,40 @@
-// import { useState } from "react";
-// import ChatSidebar from "./ChatSidebar";
-// import ChatBox from "./ChatBox";
-
-// // const ChatPage = ({ onlineUsers }) => {
-// //   const currentUserId = localStorage.getItem("id");
-// //   const [selectedUser, setSelectedUser] = useState(null);
-
-// //   return (
-// //     <div className="flex h-screen">
-// //       <ChatSidebar
-// //         onlineUsers={onlineUsers}
-// //         currentUserId={currentUserId}
-// //         selectedUserId={selectedUser?._id}
-// //         onSelectUser={setSelectedUser}
-// //       />
-// //       {selectedUser ? (
-// //         <ChatBox currentUserId={currentUserId} receiver={selectedUser} />
-// //       ) : (
-// //         <div className="w-2/3 flex items-center justify-center">
-// //           <p className="text-gray-400 text-lg">
-// //             Select a user to start chatting
-// //           </p>
-// //         </div>
-// //       )}
-// //     </div>
-// //   );
-// // };
-// const ChatPage = ({ onlineUsers }) => {
-//   const currentUserId = localStorage.getItem("id");
-//   const [selectedUser, setSelectedUser] = useState(null);
-
-//   return (
-//     <div className="flex h- bg-gray-100">
-//       <ChatSidebar
-//         onlineUsers={onlineUsers}
-//         currentUserId={currentUserId}
-//         selectedUserId={selectedUser?._id}
-//         onSelectUser={setSelectedUser}
-//       />
-//       {selectedUser ? (
-//         <div className="flex-1 bg-white shadow-md flex flex-col">
-//           <ChatBox currentUserId={currentUserId} receiver={selectedUser} />
-//         </div>
-//       ) : (
-//         <div className="flex-1 flex items-center justify-center text-gray-500">
-//           <p className="text-xl font-medium">Select a user to start chatting</p>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ChatPage;
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatSidebar from "./ChatSidebar";
 import ChatBox from "./ChatBox";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const ChatPage = ({ onlineUsers }) => {
+  const { userId } = useParams(); // From route
   const currentUserId = localStorage.getItem("id");
   const [selectedUser, setSelectedUser] = useState(null);
 
+  useEffect(() => {
+    const fetchSelectedUser = async () => {
+      if (userId) {
+        try {
+          const res = await axios.get(`/user/${userId}`);
+          setSelectedUser(res.data.data);
+        } catch (err) {
+          console.error("Error fetching user:", err);
+        }
+      }
+    };
+    fetchSelectedUser();
+  }, [userId]);
+
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] bg-white">
       {/* Sidebar */}
-      <div className="w-[300px] border-r border-gray-200">
+      <div className="w-[320px] border-r border-gray-200 ">
+        <div className="px-6 pt-4 pb-2 ">
+          <h2 className="text-2xl font-semibold mb-2">Messages</h2>
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-[95%] px-3 py-2 text-sm rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
         <ChatSidebar
           onlineUsers={onlineUsers}
           currentUserId={currentUserId}
@@ -72,14 +43,34 @@ const ChatPage = ({ onlineUsers }) => {
         />
       </div>
 
-      {/* Chat Box or Placeholder */}
-      <div className="flex-1">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex items-center justify-center relative">
         {selectedUser ? (
           <ChatBox currentUserId={currentUserId} receiver={selectedUser} />
         ) : (
-          <div className="h-full flex items-center justify-center bg-gray-50">
-            <p className="text-gray-400 text-lg">
-              Select a user to start chatting
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 8h10M7 12h4m1 8.5a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700">
+              Your Messages
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Send private messages to a friend
             </p>
           </div>
         )}

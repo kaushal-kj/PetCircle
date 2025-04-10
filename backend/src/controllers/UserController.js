@@ -8,6 +8,7 @@ const cloudinaryUtil = require("../utils/CloudinaryUtil");
 const ExpertModel = require("../models/ExpertModel");
 //using jwt for forgot password
 const jwt = require("jsonwebtoken");
+const MessageModel = require("../models/MessageModel");
 const secret = "secret";
 
 const storage = multer.diskStorage({
@@ -591,6 +592,40 @@ const getFollowing = async (req, res) => {
       .json({ message: "Error fetching following", error: error.message });
   }
 };
+
+// Fetch users with last message and last seen
+const getUsersWithChatMeta = async (req, res) => {
+  try {
+    const { currentUserId } = req.query;
+    const users = await UserModel.find({ _id: { $ne: currentUserId } });
+
+    const usersWithMeta = await Promise.all(
+      users.map(async (user) => {
+        const lastMsg = await MessageModel.findOne({
+          $or: [
+            { senderId: currentUserId, receiverId: user._id },
+            { senderId: user._id, receiverId: currentUserId },
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .lean();
+
+        return {
+          ...user.toObject(),
+          lastMessage: lastMsg?.message || "",
+          lastMessageSender: lastMsg?.senderId?.toString(), // add this line
+          lastSeen: user.updatedAt, // or customize as needed
+        };
+      })
+    );
+
+    res.json({ success: true, data: usersWithMeta });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching users", err });
+  }
+};
 module.exports = {
   signup,
   loginUser,
@@ -603,4 +638,5 @@ module.exports = {
   unfollowUser,
   getFollowers,
   getFollowing,
+  getUsersWithChatMeta,
 };

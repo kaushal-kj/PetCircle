@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const ViewProfile = () => {
@@ -25,6 +25,18 @@ const ViewProfile = () => {
     } catch (err) {
       console.error("Error fetching", type, err);
     }
+  };
+
+  const navigate = useNavigate();
+  const handleMessage = () => {
+    const role = localStorage.getItem("role"); // "petOwner" or "expert"
+
+    if (role === "expert") {
+      navigate(`/expert/messages/${id}`);
+    } else {
+      navigate(`/main/messages/${id}`);
+    }
+    // navigate(`/main/messages/${id}`); // navigate to the chat page with that user
   };
 
   useEffect(() => {
@@ -97,7 +109,7 @@ const ViewProfile = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <img
-            src={user.profilePic || "https://via.placeholder.com/150"}
+            src={user.profilePic}
             alt="Profile"
             className="w-24 h-24 rounded-full border"
           />
@@ -133,16 +145,24 @@ const ViewProfile = () => {
 
         {/* Show Follow/Unfollow button if NOT viewing own profile */}
         {loggedInUserId !== id && (
-          <button
-            onClick={handleFollowToggle}
-            className={`px-4 py-1 rounded-md ${
-              isFollowing
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            {isFollowing ? "Unfollow" : "Follow"}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleFollowToggle}
+              className={`px-4 py-1 rounded-md ${
+                isFollowing
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
+            </button>
+            <button
+              onClick={handleMessage}
+              className="bg-gray-700 text-white px-4 py-1 rounded-md hover:bg-gray-800"
+            >
+              Message
+            </button>
+          </div>
         )}
       </div>
 

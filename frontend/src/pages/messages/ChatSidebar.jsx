@@ -1,120 +1,8 @@
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-
-// const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
-//   const [users, setUsers] = useState([]);
-
-//   useEffect(() => {
-//     axios
-//       .get("/users") // Replace with your actual API
-//       .then((res) =>
-//         setUsers(res.data.data.filter((u) => u._id !== currentUserId))
-//       );
-//   }, []);
-
-//   const isUserOnline = (userId) => onlineUsers.includes(userId);
-
-//   return (
-//     <div className="w-1/4 border-r border-gray-300 p-4 overflow-y-auto">
-//       <h2 className="text-xl font-semibold mb-4">Chats</h2>
-//       {users.map((user) => (
-//         <div
-//           key={user._id}
-//           onClick={() => onSelectUser(user)}
-//           className="p-2 cursor-pointer hover:bg-gray-100 rounded flex items-center"
-//         >
-//           {/* <div className="relative"> */}
-//           <img
-//             src={user.profilePic || "https://i.pravatar.cc/40"}
-//             alt={user.name}
-//             className="w-10 h-10 rounded-full mr-3"
-//           />
-//           {/* {isUserOnline(user._id) && (
-//               <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-//             )} */}
-//           {/* </div> */}
-//           <div className="flex flex-col">
-//             <span className="text-lg font-medium">{user.fullName}</span>
-//             <span
-//               className={`text-[12px] font-medium ${
-//                 isUserOnline(user._id) ? "text-green-600" : "text-red-500"
-//               }`}
-//             >
-//               {isUserOnline(user._id) ? "online" : "offline"}
-//             </span>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default ChatSidebar;
-
 import { useEffect, useState } from "react";
 import axios from "axios";
+import moment from "moment";
+import { socket } from "../../socket";
 
-// const ChatSidebar = ({
-//   currentUserId,
-//   onSelectUser,
-//   onlineUsers,
-//   selectedUserId,
-// }) => {
-//   const [users, setUsers] = useState([]);
-
-//   useEffect(() => {
-//     axios
-//       .get("/users") // Replace with your actual API
-//       .then((res) =>
-//         setUsers(res.data.data.filter((u) => u._id !== currentUserId))
-//       );
-//   }, []);
-
-//   const isUserOnline = (userId) => onlineUsers.includes(userId);
-
-//   return (
-//     <div className="w-[320px] bg-white border-r border-gray-200 p-4 overflow-y-auto shadow-sm">
-//       <h2 className="text-2xl font-bold mb-6 text-gray-800 px-2">Chats</h2>
-
-//       <div className="space-y-3">
-//         {users.map((user) => {
-//           const isOnline = isUserOnline(user._id);
-//           const isSelected = selectedUserId === user._id;
-
-//           return (
-//             <div
-//               key={user._id}
-//               onClick={() => onSelectUser(user)}
-//               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-//                 ${isSelected ? "bg-blue-100" : "hover:bg-gray-100"}`}
-//             >
-//               <div className="relative">
-//                 <img
-//                   src={user.profilePic || "https://i.pravatar.cc/40"}
-//                   alt={user.name}
-//                   className="w-12 h-12 rounded-full object-cover"
-//                 />
-//                 {isOnline && (
-//                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-//                 )}
-//               </div>
-//               <div>
-//                 <p className="font-semibold text-gray-800">{user.fullName}</p>
-//                 <p
-//                   className={`text-xs ${
-//                     isOnline ? "text-green-600" : "text-gray-400"
-//                   }`}
-//                 >
-//                   {isOnline ? "Online" : "Offline"}
-//                 </p>
-//               </div>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// };
 const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
   const [users, setUsers] = useState([]);
 
@@ -126,34 +14,124 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
       );
   }, []);
 
+  // useEffect(() => {
+  //   if (!socket) return;
+
+  //   socket.on("userStatusChanged", ({ userId, isOnline, lastSeen }) => {
+  //     setUsers((prevUsers) =>
+  //       prevUsers.map((user) =>
+  //         user._id === userId
+  //           ? { ...user, isOnline, lastSeen: lastSeen || user.lastSeen }
+  //           : user
+  //       )
+  //     );
+  //   });
+
+  //   return () => socket.off("userStatusChanged");
+  // }, []);
+
+  // ✅ Real-time update of last message on receiving newMessage
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (newMessage) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => {
+          if (
+            newMessage.senderId === u._id ||
+            newMessage.receiverId === u._id
+          ) {
+            return {
+              ...u,
+              lastMessage: newMessage.message,
+              lastSeen: newMessage.createdAt,
+              lastMessageSender: newMessage.senderId,
+              seen: newMessage.seen,
+            };
+          }
+          return u;
+        })
+      );
+    };
+
+    socket.on("newMessage", handleNewMessage);
+    socket.on("messagesSeen", ({ by }) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u._id === by ? { ...u, seen: true } : u))
+      );
+    });
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+      socket.off("messagesSeen");
+    };
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get(`/users/with-chat-meta?currentUserId=${currentUserId}`)
+      .then((res) => setUsers(res.data.data))
+      .catch((err) => console.error("Error fetching users:", err));
+  }, []);
+
+  const getLastMessagePreview = (user, currentUserId) => {
+    if (!user.lastMessage) return "No messages yet";
+    const isSentByYou = user.lastMessageSender === currentUserId;
+    return `${isSentByYou ? "You: " : ""}${user.lastMessage}`;
+  };
+
+  const getLastSeenTime = (user) => {
+    if (user.isOnline) return "Online";
+    if (!user.lastSeen) return "A while ago";
+    return moment(user.lastSeen).fromNow(); // e.g. "5 minutes ago"
+  };
+
   const isUserOnline = (userId) => onlineUsers.includes(userId);
 
   return (
-    <div className="w-full border-r border-gray-300 p-4 overflow-y-auto bg-white">
-      <h2 className="text-xl font-semibold mb-4">Chats</h2>
-      {users.map((user) => (
-        <div
-          key={user._id}
-          onClick={() => onSelectUser(user)}
-          className="p-2 cursor-pointer hover:bg-gray-100 rounded flex items-center gap-2"
-        >
-          <img
-            src={user.profilePic || "https://i.pravatar.cc/40"}
-            alt={user.name}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{user.fullName}</span>
-            <span
-              className={`text-xs ${
-                isUserOnline(user._id) ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              {isUserOnline(user._id) ? "Online" : "Offline"}
-            </span>
+    <div className="w-[95%] bg-white h-[85%] shadow-md overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
+        {users.map((user) => (
+          <div
+            key={user._id}
+            onClick={() => onSelectUser(user)}
+            className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-100"
+          >
+            {/* Profile Pic with Online Dot */}
+            <div className="relative">
+              <img
+                src={
+                  user.profilePic || "https://i.pravatar.cc/150?u=" + user._id
+                }
+                alt={user.fullName}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              {isUserOnline(user._id) && (
+                <span className="absolute bottom-0 right-0 block w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
+              )}
+            </div>
+
+            {/* User Info */}
+            <div className="flex flex-col flex-1">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold">{user.fullName}</span>
+                <span className="text-xs text-gray-500">
+                  {/* {getLastSeenTime(user)} */}
+                  {user.lastSeen && user.lastMessage
+                    ? moment(user.lastSeen).format("hh:mm A")
+                    : ""}{" "}
+                </span>
+              </div>
+              <span className="text-sm text-gray-500 truncate">
+                {/* {getLastMessagePreview(user, currentUserId)} */}
+                {user.lastMessageSender === currentUserId
+                  ? `You: ${user.lastMessage}`
+                  : user.lastMessage}
+              </span>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
