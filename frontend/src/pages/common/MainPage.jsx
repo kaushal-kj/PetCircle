@@ -35,12 +35,7 @@ const MainPage = () => {
 
   const handleLogout = () => {
     //  Clear user session
-    localStorage.removeItem("id");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
-    localStorage.removeItem("email");
-    localStorage.removeItem("profilePic");
-
+    localStorage.clear();
     //  Redirect to login page
     navigate("/login");
   };

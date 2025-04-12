@@ -26,11 +26,14 @@ const getAllExperts = async (req, res) => {
 const getExpertById = async (req, res) => {
   try {
     const expert = await ExpertModel.findById(req.params.id)
-      .populate("user", "fullName username email profilePic bio followers following")
+      .populate(
+        "user",
+        "fullName username email profilePic bio followers following"
+      )
       .populate({
-        path: "posts", // 🔥 Populating posts related to the expert
+        path: "posts", //  Populating posts related to the expert
         options: { sort: { createdAt: -1 } }, // Sort posts by newest first
-      }) // Populate user details
+      }); // Populate user details
     if (!expert) {
       return res.status(404).json({ message: "Expert not found" });
     }
@@ -42,8 +45,6 @@ const getExpertById = async (req, res) => {
     res.status(500).json({ message: "Error fetching expert", error });
   }
 };
-
-
 
 module.exports = {
   getAllExperts,

@@ -27,6 +27,33 @@ const ViewExpertProfile = () => {
       console.error("Error fetching", type, err);
     }
   };
+  const loggedInUserRole = localStorage.getItem("role"); // Get logged-in user's role
+  const userId = localStorage.getItem("id");
+
+  const handleProfileClick = (profileId, role, expertId) => {
+    if (profileId === userId) {
+      // Navigate to the logged-in user's profile based on their role
+      if (role === "expert") {
+        navigate("/expert/profile");
+      } else {
+        navigate("/main/profile");
+      }
+    } else if (role === "expert" && expertId) {
+      // If clicking an expert's profile, navigate correctly based on the logged-in user's role
+      if (loggedInUserRole === "expert") {
+        navigate(`/expert/experts/${expertId}`); // Expert viewing another expert
+      } else {
+        navigate(`/main/experts/${expertId}`); // Pet owner viewing an expert
+      }
+    } else {
+      // If clicking on a pet owner, navigate based on the logged-in user's role
+      if (loggedInUserRole === "expert") {
+        navigate(`/expert/feeds/${profileId}`);
+      } else {
+        navigate(`/main/feeds/${profileId}`);
+      }
+    }
+  };
 
   // const userId = localStorage.getItem("id"); // Get logged-in expert ID
   const navigate = useNavigate();
@@ -265,6 +292,15 @@ const ViewExpertProfile = () => {
                   listData.map((person) => (
                     <div
                       key={person._id}
+                      onClick={() => {
+                        handleProfileClick(
+                          person._id,
+                          person.role,
+                          person.expertProfile,
+                          loggedInUserRole
+                        );
+                        setShowListModal(false);
+                      }}
                       className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg transition"
                     >
                       <div className="flex items-center space-x-3">

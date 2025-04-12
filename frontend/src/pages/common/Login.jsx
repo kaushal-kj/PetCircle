@@ -42,7 +42,9 @@ const Login = () => {
         localStorage.setItem("role", response.data.data.role);
         localStorage.setItem("email", response.data.data.email);
         setTimeout(() => {
-          if (response.data.data.role === "petOwner") {
+          if (response.data.data.role === "admin") {
+            navigate("/admin");
+          } else if (response.data.data.role === "petOwner") {
             navigate("/main/feeds");
           } else if (response.data.data.role === "expert") {
             if (response.data.requiresCertificateUpload) {

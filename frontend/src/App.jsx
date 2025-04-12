@@ -28,6 +28,13 @@ import ChatPage from "./pages/messages/ChatPage";
 import AdoptionPage from "./pages/adoption/AdoptionPage";
 
 import { socket } from "./socket";
+import AdminDashboard from "./admin/dashboard/AdminDashboard";
+import AdminOverview from "./admin/components/AdminOverview";
+import ManageUsers from "./admin/adminpages/ManageUsers";
+import ManageExperts from "./admin/adminpages/ManageExperts";
+import ManagePosts from "./admin/adminpages/ManagePosts";
+import ManageAdoptions from "./admin/adminpages/ManageAdoptions";
+import ManageCommunities from "./admin/adminpages/ManageCommunities";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";
@@ -53,6 +60,16 @@ function App() {
         <Route path="/resetpassword/:token" element={<ResetPassword />} />
 
         <Route path="" element={<PrivateRoutes />}>
+          {/* admin routes */}
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="overview" element={<AdminOverview />} />
+            <Route path="users" element={<ManageUsers />} />
+            <Route path="experts" element={<ManageExperts />} />
+            <Route path="posts" element={<ManagePosts />} />
+            <Route path="adoptions" element={<ManageAdoptions />} />
+            <Route path="communities" element={<ManageCommunities />} />
+          </Route>
+
           {/* petowner routes */}
           <Route path="/main" element={<MainPage />}>
             <Route path="feeds" element={<FeedPage />} />

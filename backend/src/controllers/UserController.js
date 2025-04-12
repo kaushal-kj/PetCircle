@@ -258,7 +258,7 @@ const loginUser = async (req, res) => {
 //get all users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find()
+    const users = await UserModel.find({ role: { $ne: "admin" } })
       .select("-password")
       .populate("pets")
       .populate(

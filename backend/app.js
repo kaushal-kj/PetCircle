@@ -41,6 +41,10 @@ app.use(expertRoutes);
 const messageRoutes = require("./src/routes/MessageRoute");
 app.use(messageRoutes);
 
+//adminRoutes
+const adminRoutes = require("./src/routes/adminRoutes");
+app.use("/admin", adminRoutes);
+
 //database connection
 mongoose.connect("mongodb://127.0.0.1:27017/PetCircle").then(() => {
   console.log("database connected.");
