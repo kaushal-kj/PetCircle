@@ -31,10 +31,10 @@ import { socket } from "./socket";
 import AdminDashboard from "./admin/dashboard/AdminDashboard";
 import AdminOverview from "./admin/components/AdminOverview";
 import ManageUsers from "./admin/adminpages/ManageUsers";
-import ManageExperts from "./admin/adminpages/ManageExperts";
 import ManagePosts from "./admin/adminpages/ManagePosts";
 import ManageAdoptions from "./admin/adminpages/ManageAdoptions";
 import ManageCommunities from "./admin/adminpages/ManageCommunities";
+import ManageExperts from "./admin/adminpages/ManageExperts";
 
 function App() {
   axios.defaults.baseURL = "http://localhost:3000";

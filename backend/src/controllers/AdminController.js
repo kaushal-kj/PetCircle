@@ -5,10 +5,19 @@ const PostModel = require("../models/PostModel");
 const AdoptionModel = require("../models/AdoptionModel");
 const CommunityModel = require("../models/CommunityModel");
 
+const User = require("../models/UserModel");
+const Expert = require("../models/ExpertModel");
+const Post = require("../models/PostModel");
+const Pet = require("../models/PetModel");
+const Adoption = require("../models/AdoptionModel");
+const Community = require("../models/CommunityModel");
+
 // ========== USERS ==========
 const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find().select("-password");
+    const users = await UserModel.find({ role: { $ne: "admin" } }).select(
+      "-password"
+    );
     res.status(200).json({ message: "Users fetched", data: users });
   } catch (err) {
     res
@@ -28,36 +37,86 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// ========== EXPERTS ==========
+// ========== EXPERTS ========
 const getAllExperts = async (req, res) => {
   try {
-    const experts = await ExpertModel.find().populate(
-      "user",
-      "fullName username email role"
-    );
-    res.status(200).json({ message: "Experts fetched", data: experts });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch experts", error: err.message });
+    const experts = await Expert.find().populate("user", "username email");
+    res.status(200).json(experts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching experts" });
+  }
+};
+
+const approveExpert = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const expert = await Expert.findById(id);
+    if (!expert) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    expert.isVerified = true;
+    await expert.save();
+
+    // Optionally update user role to "expert" (if needed)
+    const user = await User.findById(expert.user);
+    user.role = "expert";
+    await user.save();
+
+    res.status(200).json({ message: "Expert approved successfully", expert });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error approving expert" });
+  }
+};
+
+const rejectExpert = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const expert = await Expert.findById(id);
+    if (!expert) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    expert.isVerified = false;
+    await expert.save();
+
+    res.status(200).json({ message: "Expert rejected successfully", expert });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error rejecting expert" });
   }
 };
 
 const deleteExpert = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    await ExpertModel.findByIdAndDelete(req.params.id);
+    const expert = await Expert.findById(id);
+    if (!expert) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    // Optionally, delete the expert's posts as well
+    await Expert.deleteOne({ _id: id });
+
     res.status(200).json({ message: "Expert deleted successfully" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to delete expert", error: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting expert" });
   }
 };
 
 // ========== POSTS ==========
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await PostModel.find().populate("author", "username role");
+    const posts = await PostModel.find().populate(
+      "author",
+      "username role profilePic email"
+    );
     res.status(200).json({ message: "Posts fetched", data: posts });
   } catch (err) {
     res
@@ -103,10 +162,9 @@ const deleteAdoption = async (req, res) => {
 // ========== COMMUNITIES ==========
 const getAllCommunities = async (req, res) => {
   try {
-    const communities = await CommunityModel.find().populate(
-      "createdBy members",
-      "username"
-    );
+    const communities = await CommunityModel.find()
+      .populate("creator", "username")
+      .populate("members", "username profilePic role expertProfile");
     res.status(200).json({ message: "Communities fetched", data: communities });
   } catch (err) {
     res
@@ -126,15 +184,50 @@ const deleteCommunity = async (req, res) => {
   }
 };
 
+const getAdminOverview = async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      totalExperts,
+      totalPosts,
+      totalPets,
+      totalAdoptions,
+      totalCommunities,
+    ] = await Promise.all([
+      User.countDocuments({ role: "petOwner" }),
+      User.countDocuments({ role: "expert" }),
+      Post.countDocuments(),
+      Pet.countDocuments(),
+      Adoption.countDocuments(),
+      Community.countDocuments(),
+    ]);
+
+    res.status(200).json({
+      totalUsers,
+      totalExperts,
+      totalPosts,
+      totalPets,
+      totalAdoptions,
+      totalCommunities,
+    });
+  } catch (err) {
+    console.error("Error fetching admin overview:", err);
+    res.status(500).json({ message: "Failed to fetch admin overview" });
+  }
+};
+
 module.exports = {
   getAllUsers,
   deleteUser,
-  getAllExperts,
-  deleteExpert,
   getAllPosts,
   deletePost,
   getAllAdoptions,
   deleteAdoption,
   getAllCommunities,
   deleteCommunity,
+  getAdminOverview,
+  getAllExperts,
+  approveExpert,
+  rejectExpert,
+  deleteExpert,
 };

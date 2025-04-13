@@ -1,44 +1,204 @@
-import { Bar, Doughnut } from "react-chartjs-2";
-import { Chart, registerables } from "chart.js";
-Chart.register(...registerables);
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Box,
+  CircularProgress,
+  Button,
+} from "@mui/material";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#FF6666",
+  "#AA66CC",
+];
 
 const AdminOverview = () => {
-  const barData = {
-    labels: ["Users", "Experts", "Posts", "Pets", "Adoptions", "Communities"],
-    datasets: [
-      {
-        label: "Count",
-        data: [120, 35, 340, 200, 45, 20],
-        backgroundColor: "rgba(59, 130, 246, 0.6)",
-      },
-    ],
-  };
+  const [overview, setOverview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const pieData = {
-    labels: ["Male", "Female", "Other"],
-    datasets: [
-      {
-        label: "Gender Distribution",
-        data: [60, 80, 10],
-        backgroundColor: ["#3b82f6", "#ef4444", "#10b981"],
-      },
-    ],
-  };
+  // Fetch overview data from backend on component mount
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const response = await axios.get("/admin/overview");
+        setOverview(response.data); // Expecting { totalUsers, totalExperts, totalPosts, totalPets, totalAdoptions, totalCommunities }
+      } catch (err) {
+        console.error("Error fetching admin overview:", err);
+        setError("Failed to load overview data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Typography variant="h6" align="center" color="error">
+        {error}
+      </Typography>
+    );
+  }
+
+  const totalUsers = overview.totalUsers + overview.totalExperts;
+
+  // Prepare data for charts
+  const chartData = [
+    { name: "PetOwners", value: overview.totalUsers },
+    { name: "Experts", value: overview.totalExperts },
+    { name: "Posts", value: overview.totalPosts },
+    { name: "Pets", value: overview.totalPets },
+    { name: "Adoptions", value: overview.totalAdoptions },
+    { name: "Communities", value: overview.totalCommunities },
+  ];
 
   return (
-    <div className="p-6 w-full">
-      <h1 className="text-2xl font-bold mb-4">Overview</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="text-lg font-semibold mb-2">Entity Counts</h2>
-          <Bar data={barData} />
-        </div>
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="text-lg font-semibold mb-2">User Gender Split</h2>
-          <Doughnut data={pieData} />
-        </div>
-      </div>
-    </div>
+    <Box p={4}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Admin Overview
+      </Typography>
+
+      <Grid container spacing={3}>
+        {/* Cards for each metric */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">
+                Total Users (Pet Owners + Experts)
+              </Typography>
+              <Typography variant="h4">{totalUsers}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        {/* <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">All Users</Typography>
+              <Typography variant="h4">{totalUsers}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Pet Owners</Typography>
+              <Typography variant="h4">{overview.totalUsers}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Experts</Typography>
+              <Typography variant="h4">{overview.totalExperts}</Typography>
+            </CardContent>
+          </Card>
+        </Grid> */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Posts</Typography>
+              <Typography variant="h4">{overview.totalPosts}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Pets</Typography>
+              <Typography variant="h4">{overview.totalPets}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Adoptions</Typography>
+              <Typography variant="h4">{overview.totalAdoptions}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Communities</Typography>
+              <Typography variant="h4">{overview.totalCommunities}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Chart Section */}
+      <Box mt={6}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Overview Chart
+        </Typography>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend verticalAlign="bottom" height={36} />
+          </PieChart>
+        </ResponsiveContainer>
+      </Box>
+
+      {/* Refresh Button */}
+      <Box mt={4} display="flex" justifyContent="flex-end">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => window.location.reload()}
+        >
+          Refresh Data
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

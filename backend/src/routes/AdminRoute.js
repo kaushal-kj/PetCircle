@@ -7,8 +7,10 @@ const AdminController = require("../controllers/AdminController");
 router.get("/users", AdminController.getAllUsers);
 router.delete("/user/:id", AdminController.deleteUser);
 
-// Experts
+//Experts
 router.get("/experts", AdminController.getAllExperts);
+router.patch("/expert/approve/:id", AdminController.approveExpert);
+router.patch("/expert/reject/:id", AdminController.rejectExpert);
 router.delete("/expert/:id", AdminController.deleteExpert);
 
 // Posts
@@ -22,5 +24,7 @@ router.delete("/adoption/:id", AdminController.deleteAdoption);
 // Communities
 router.get("/communities", AdminController.getAllCommunities);
 router.delete("/community/:id", AdminController.deleteCommunity);
+
+router.get("/overview", AdminController.getAdminOverview);
 
 module.exports = router;

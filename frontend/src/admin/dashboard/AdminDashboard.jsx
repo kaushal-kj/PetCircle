@@ -23,8 +23,8 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-6 space-y-6">
-        <h2 className="text-2xl font-bold">Admin Panel</h2>
+      <aside className="w-64 fixed min-h-screen  bg-gray-900 text-white p-6 space-y-6">
+        <h2 className="text-2xl font-bold">PetCircle Admin</h2>
         <nav className="space-y-4">
           <Link
             to="/admin/overview"
@@ -44,7 +44,7 @@ const AdminDashboard = () => {
             to="/admin/experts"
             className="flex items-center hover:bg-gray-800 px-3 py-2 rounded"
           >
-            <FaUserMd className="mr-3" />
+            <FaUsers className="mr-3" />
             Manage Experts
           </Link>
           <Link
@@ -71,7 +71,7 @@ const AdminDashboard = () => {
         </nav>
         <button
           onClick={handleLogout}
-          className="flex items-center text-red-400 hover:text-white hover:bg-red-500 mt-4 px-3 py-2 rounded"
+          className=" w-full flex items-center text-red-400 hover:text-white hover:bg-red-500  px-3 py-2 rounded"
         >
           <FiLogOut className="mr-3" />
           Logout
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 p-6 ml-60 overflow-y-auto">
         {isDashboard ? (
           <div>
             <h1 className="text-3xl font-bold mb-4">Welcome Admin 👋</h1>

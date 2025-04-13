@@ -7,14 +7,6 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    axios
-      .get("/users")
-      .then((res) =>
-        setUsers(res.data.data.filter((u) => u._id !== currentUserId))
-      );
-  }, []);
-
   // Real-time update of last message on receiving newMessage
   useEffect(() => {
     if (!socket) return;
@@ -52,14 +44,36 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   axios
+  //     .get(`/users/with-chat-meta?currentUserId=${currentUserId}`)
+  //     .then((res) =>
+  //       setUsers(res.data.data.filter((u) => u._id !== currentUserId))
+  //     )
+  //     .catch((err) => console.error("Error fetching users:", err));
+  // }, [currentUserId]);
+
   useEffect(() => {
+    const role = localStorage.getItem("role"); // petOwner, expert, or admin
+    const currentUserId = localStorage.getItem("id");
+
     axios
       .get(`/users/with-chat-meta?currentUserId=${currentUserId}`)
-      .then((res) =>
-        setUsers(res.data.data.filter((u) => u._id !== currentUserId))
-      )
+      .then((res) => {
+        let allUsers = res.data.data;
+
+        // Remove current user from the list
+        allUsers = allUsers.filter((u) => u._id !== currentUserId);
+
+        // If current user is NOT admin, remove admins from list
+        if (role !== "admin") {
+          allUsers = allUsers.filter((u) => u.role !== "admin");
+        }
+
+        setUsers(allUsers);
+      })
       .catch((err) => console.error("Error fetching users:", err));
-  }, [currentUserId]);
+  }, []);
 
   const filteredUsers = users.filter((user) =>
     `${user.fullName} ${user.username}`

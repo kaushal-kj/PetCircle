@@ -42,7 +42,7 @@ const messageRoutes = require("./src/routes/MessageRoute");
 app.use(messageRoutes);
 
 //adminRoutes
-const adminRoutes = require("./src/routes/adminRoutes");
+const adminRoutes = require("./src/routes/AdminRoute");
 app.use("/admin", adminRoutes);
 
 //database connection
