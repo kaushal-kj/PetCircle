@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import axios from "axios";
+import VerifiedIcon from "@mui/icons-material/Verified";
 
 const ExpertProfile = () => {
   const [user, setUser] = useState(null);
@@ -14,6 +15,11 @@ const ExpertProfile = () => {
   const [showListModal, setShowListModal] = useState(false);
   const [listType, setListType] = useState(""); // "followers" or "following"
   const [listData, setListData] = useState([]);
+
+  //user pets detail
+  const [userPets, setUserPets] = useState([]);
+  const [selectedPet, setSelectedPet] = useState(null);
+  const [showPetModal, setShowPetModal] = useState(false);
 
   const fetchList = async (type) => {
     try {
@@ -64,7 +70,7 @@ const ExpertProfile = () => {
         .get(`/user/${userId}`)
         .then((response) => {
           setUser(response.data.data);
-          // console.log(response.data.data);
+          console.log(response.data.data);
         })
         .catch((error) => console.error("Error fetching user:", error));
 
@@ -77,6 +83,14 @@ const ExpertProfile = () => {
           setPosts(sortedPosts);
         })
         .catch((error) => console.error("Error fetching posts:", error));
+
+      axios
+        .get(`/pets?owner=${userId}`)
+        .then((res) => {
+          const filteredPets = res.data.data.filter((pet) => !pet.isRehomed);
+          setUserPets(filteredPets);
+        })
+        .catch((err) => console.error("Error fetching pets:", err));
     }
   }, [userId]);
 
@@ -122,17 +136,24 @@ const ExpertProfile = () => {
             className="w-24 h-24 rounded-full border"
           />
           <div>
-            <h1 className="text-2xl font-bold">{user.fullName}</h1>
+            <div className="flex">
+              <h1 className="text-2xl font-bold">{user.fullName}</h1>{" "}
+              <p className="text-xl ml-3">
+                {user.expertProfile.isVerified ? (
+                  <VerifiedIcon className="text-blue-500" />
+                ) : (
+                  ""
+                )}
+              </p>
+            </div>
             <p className="text-gray-600">@{user.username}</p>
             <p className="text-gray-500">{user.bio || "No bio available"}</p>
-
             {/* Show Expertise Field */}
             {user.expertise && (
               <p className="text-gray-700 font-semibold">
                 Expertise: {user.expertise}
               </p>
             )}
-
             {/* Certificate Status */}
             {/* {user?.expertProfile?.expertiseCertificate ? (
               <p className="text-green-600">✅ Certificate Uploaded</p>
@@ -153,7 +174,6 @@ const ExpertProfile = () => {
             ) : (
               <p className="text-red-500">❌ Certificate Not Uploaded</p>
             )}
-
             {/* Followers/Following */}
             <div className="flex space-x-4 mt-2">
               <span>
@@ -325,6 +345,67 @@ const ExpertProfile = () => {
               <button
                 onClick={() => setShowListModal(false)}
                 className="mt-4 w-full py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* user pets */}
+      <h3 className="mt-8 text-lg font-semibold mb-2">My Pets</h3>
+      {userPets.length === 0 ? (
+        <p className="text-gray-500 text-sm mb-4">No pets added yet.</p>
+      ) : (
+        <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+          {userPets.map((pet) => (
+            <div
+              key={pet._id}
+              className="flex flex-col items-center cursor-pointer"
+              onClick={() => {
+                setSelectedPet(pet);
+                setShowPetModal(true);
+              }}
+            >
+              <img
+                src={pet.photos?.[0] || "https://via.placeholder.com/100"}
+                alt={pet.name}
+                className="w-20 h-20 rounded-full object-cover border-2 border-gray-500"
+              />
+              <span className="text-sm mt-1">{pet.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {/* my pets show full modal */}
+      {showPetModal && selectedPet && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-2">{selectedPet.name}</h2>
+            <img
+              src={selectedPet.photos?.[0] || "https://via.placeholder.com/300"}
+              alt={selectedPet.name}
+              className="w-full h-64 object-cover rounded mb-4"
+            />
+            <p>
+              <strong>Breed:</strong> {selectedPet.breed}
+            </p>
+            <p>
+              <strong>Age:</strong> {selectedPet.age}
+            </p>
+            <p>
+              <strong>Weight:</strong> {selectedPet.weight || "N/A"} kg
+            </p>
+            <p>
+              <strong>Medical History:</strong>{" "}
+              {selectedPet.medicalHistory || "N/A"}
+            </p>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
+                onClick={() => setShowPetModal(false)}
               >
                 Close
               </button>

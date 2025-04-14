@@ -15,6 +15,11 @@ const ProfilePage = () => {
   const [listType, setListType] = useState(""); // "followers" or "following"
   const [listData, setListData] = useState([]);
 
+  //user pets detail
+  const [userPets, setUserPets] = useState([]);
+  const [selectedPet, setSelectedPet] = useState(null);
+  const [showPetModal, setShowPetModal] = useState(false);
+
   const fetchList = async (type) => {
     try {
       const response = await axios.get(
@@ -73,6 +78,13 @@ const ProfilePage = () => {
           setPosts(sortedPosts);
         })
         .catch((error) => console.error("Error fetching posts:", error));
+      axios
+        .get(`/pets?owner=${userId}`)
+        .then((res) => {
+          const filteredPets = res.data.data.filter((pet) => !pet.isRehomed);
+          setUserPets(filteredPets);
+        })
+        .catch((err) => console.error("Error fetching pets:", err));
     }
   }, [userId]);
 
@@ -261,6 +273,67 @@ const ProfilePage = () => {
               <button
                 onClick={() => setShowListModal(false)}
                 className="mt-4 w-full py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* user pets */}
+      <h3 className="mt-8 text-lg font-semibold mb-2">My Pets</h3>
+      {userPets.length === 0 ? (
+        <p className="text-gray-500 text-sm mb-4">No pets added yet.</p>
+      ) : (
+        <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+          {userPets.map((pet) => (
+            <div
+              key={pet._id}
+              className="flex flex-col items-center cursor-pointer"
+              onClick={() => {
+                setSelectedPet(pet);
+                setShowPetModal(true);
+              }}
+            >
+              <img
+                src={pet.photos?.[0] || "https://via.placeholder.com/100"}
+                alt={pet.name}
+                className="w-20 h-20 rounded-full object-cover border-2 border-gray-500"
+              />
+              <span className="text-sm mt-1">{pet.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {/* my pets show full modal */}
+      {showPetModal && selectedPet && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-2">{selectedPet.name}</h2>
+            <img
+              src={selectedPet.photos?.[0] || "https://via.placeholder.com/300"}
+              alt={selectedPet.name}
+              className="w-full h-64 object-cover rounded mb-4"
+            />
+            <p>
+              <strong>Breed:</strong> {selectedPet.breed}
+            </p>
+            <p>
+              <strong>Age:</strong> {selectedPet.age}
+            </p>
+            <p>
+              <strong>Weight:</strong> {selectedPet.weight || "N/A"} kg
+            </p>
+            <p>
+              <strong>Medical History:</strong>{" "}
+              {selectedPet.medicalHistory || "N/A"}
+            </p>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
+                onClick={() => setShowPetModal(false)}
               >
                 Close
               </button>

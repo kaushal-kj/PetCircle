@@ -14,13 +14,13 @@ const AdoptionCard = ({ pet, onDelete }) => {
       }`}
     >
       <img
-        src={pet.pet.photos || "https://via.placeholder.com/300"}
-        alt={pet.pet.name}
+        src={pet.pet?.photos || "https://via.placeholder.com/300"}
+        alt={pet.pet?.name}
         className="w-full h-48 object-cover rounded"
       />
       <div className="mt-4 space-y-1">
         <div className="flex justify-between items-start">
-          <h2 className="text-lg font-bold">{pet.pet.name}</h2>
+          <h2 className="text-lg font-bold">{pet.pet?.name}</h2>
           {isOwner && (
             <button
               onClick={onDelete}
@@ -31,18 +31,18 @@ const AdoptionCard = ({ pet, onDelete }) => {
           )}
         </div>
         <p>
-          <strong>Breed:</strong> {pet.pet.breed}
+          <strong>Breed:</strong> {pet.pet?.breed}
         </p>
         <p>
-          <strong>Age:</strong> {pet.pet.age}{" "}
-          {pet.pet.age === 1 ? "year" : "years"}
+          <strong>Age:</strong> {pet.pet?.age}{" "}
+          {pet.pet?.age === 1 ? "year" : "years"}
         </p>
-        {pet.pet.weight && (
+        {pet.pet?.weight && (
           <p>
-            <strong>Weight:</strong> {pet.pet.weight}
+            <strong>Weight:</strong> {pet.pet?.weight}
           </p>
         )}
-        <p className="text-gray-700 mt-2">{pet.message}</p>
+        <p className="text-gray-700 mt-2">{pet?.message}</p>
         <p className="text-sm text-gray-500 mt-2">
           Posted by: {pet?.postedBy?.username}
         </p>
@@ -51,20 +51,20 @@ const AdoptionCard = ({ pet, onDelete }) => {
             <>
               <span>📧</span>
               <a
-                href={`mailto:${pet.contactInfo}`}
+                href={`mailto:${pet?.contactInfo}`}
                 className="ml-1 text-blue-500 underline"
               >
-                {pet.contactInfo}
+                {pet?.contactInfo}
               </a>
             </>
           ) : (
             <>
               <span>📞</span>
               <a
-                href={`tel:${pet.contactInfo}`}
+                href={`tel:${pet?.contactInfo}`}
                 className="ml-1 text-blue-500 underline"
               >
-                {pet.contactInfo}
+                {pet?.contactInfo}
               </a>
             </>
           )}
