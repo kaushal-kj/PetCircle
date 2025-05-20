@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 // Multer Upload Object
 const upload = multer({ storage: storage }).single("image");
 
-// ✅ Create Pet and Add to User's `pets` Array
+// Create Pet and Add to User's `pets` Array
 const createPet = async (req, res) => {
   try {
     const { owner } = req.body;
@@ -40,7 +40,7 @@ const createPet = async (req, res) => {
   }
 };
 
-// ✅ Get Pet by ID (With Owner Info)
+// Get Pet by ID (With Owner Info)
 const getPetById = async (req, res) => {
   try {
     const pet = await PetModel.findById(req.params.id).populate(
@@ -56,7 +56,7 @@ const getPetById = async (req, res) => {
   }
 };
 
-// ✅ Get All Pets (Filter by Owner if Provided)
+// Get All Pets (Filter by Owner if Provided)
 const getAllPets = async (req, res) => {
   try {
     const { owner } = req.query; // Get owner ID from query params
@@ -72,25 +72,7 @@ const getAllPets = async (req, res) => {
   }
 };
 
-// ✅ Update Pet by ID
-// const updatePet = async (req, res) => {
-//   try {
-//     const updatedPet = await PetModel.findByIdAndUpdate(
-//       req.params.id,
-//       req.body,
-//       { new: true }
-//     );
-//     if (!updatedPet) {
-//       return res.status(404).json({ message: "Pet not found" });
-//     }
-//     res
-//       .status(200)
-//       .json({ message: "Pet updated successfully", data: updatedPet });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error updating pet", error });
-//   }
-// };
-
+// Update Pet by ID
 const updatePet = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -125,7 +107,7 @@ const updatePet = (req, res) => {
   });
 };
 
-// ✅ Delete Pet by ID (Remove from User's `pets` Array)
+// Delete Pet by ID (Remove from User's `pets` Array)
 const deletePet = async (req, res) => {
   try {
     const pet = await PetModel.findById(req.params.id);
@@ -148,7 +130,7 @@ const deletePet = async (req, res) => {
   }
 };
 
-// ✅ Add Pet with Cloudinary Image Upload
+// Add Pet with Cloudinary Image Upload
 const addPetWithFile = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {

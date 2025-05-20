@@ -59,11 +59,6 @@ const ExpertsPage = () => {
                   alt={expertName}
                   className="w-full h-40 object-cover"
                 />
-                {/* {isVerified && (
-                  <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
-                    Verified ✅
-                  </span>
-                )} */}
               </div>
               <div className="p-4 text-center">
                 <h3 className="text-lg font-semibold text-gray-900">

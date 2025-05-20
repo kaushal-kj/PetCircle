@@ -71,7 +71,6 @@ const ViewExpertProfile = () => {
     } else {
       navigate(`/main/messages/${expert?.user?._id}`);
     }
-    // navigate(`/main/messages/${expert?.user?._id}`); // navigate to the chat page with that user
   };
 
   useEffect(() => {
@@ -80,7 +79,6 @@ const ViewExpertProfile = () => {
       axios
         .get(`/expert/${expertId}`)
         .then((response) => {
-          // console.log(response.data.data);
           setExpert(response.data.data); // Store expert data
 
           // Check if logged-in user follows this expert

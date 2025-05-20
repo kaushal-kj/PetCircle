@@ -21,8 +21,6 @@ const Login = () => {
     try {
       const response = await axios.post("/user/login", data);
       if (response.status === 200) {
-        // console.log(response.data);
-        // toast.success("Login Successful! Redirecting to Main Page...");
         toast.success("Login Successful! ", {
           position: "top-center",
           autoClose: 2000,
@@ -59,7 +57,6 @@ const Login = () => {
       }
     } catch (error) {
       if (error.response) {
-        // toast.error(error.response.data.message || "Login Failed");
         toast.error(error.response.data.message || "Login Failed", {
           position: "top-center",
           autoClose: 2000,

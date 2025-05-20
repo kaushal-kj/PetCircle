@@ -4,10 +4,6 @@ const UserModel = require("../models/UserModel");
 // Get All Experts
 const getAllExperts = async (req, res) => {
   try {
-    // const experts = await ExpertModel.find().populate(
-    //   "user",
-    //   "fullName username email profilePic"
-    // );
     const experts = await ExpertModel.find().populate({
       path: "user",
       select: "fullName username email profilePic bio",

@@ -159,11 +159,6 @@ const ExpertProfile = () => {
               </p>
             )}
             {/* Certificate Status */}
-            {/* {user?.expertProfile?.expertiseCertificate ? (
-              <p className="text-green-600">✅ Certificate Uploaded</p>
-            ) : (
-              <p className="text-red-500">❌ Certificate Not Uploaded</p>
-            )} */}
             {user?.expertProfile?.expertiseCertificate ? (
               <>
                 <span className="text-green-600">✅ Certificate Uploaded</span>{" "}

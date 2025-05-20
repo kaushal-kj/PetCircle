@@ -97,14 +97,6 @@ const MainPage = () => {
                 <FaUserMd className="mr-4 ml-1" /> Experts
               </Link>
             </li>
-            {/* <li>
-              <Link
-                to="contests"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaTrophy className="mr-2" /> Contests
-              </Link>
-            </li> */}
             <li>
               <Link
                 to="profile"

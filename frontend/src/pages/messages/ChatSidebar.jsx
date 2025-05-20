@@ -44,15 +44,6 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   axios
-  //     .get(`/users/with-chat-meta?currentUserId=${currentUserId}`)
-  //     .then((res) =>
-  //       setUsers(res.data.data.filter((u) => u._id !== currentUserId))
-  //     )
-  //     .catch((err) => console.error("Error fetching users:", err));
-  // }, [currentUserId]);
-
   useEffect(() => {
     const role = localStorage.getItem("role"); // petOwner, expert, or admin
     const currentUserId = localStorage.getItem("id");

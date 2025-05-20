@@ -42,7 +42,6 @@ function App() {
 
   useEffect(() => {
     socket.on("getOnlineUsers", (users) => {
-      // console.log(users);
       setOnlineUsers(users);
     });
 
