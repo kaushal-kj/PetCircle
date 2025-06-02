@@ -12,7 +12,6 @@ const CommunityDetailsPage = () => {
   const [community, setCommunity] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isMember, setIsMember] = useState(false);
-  const [showPostForm, setShowPostForm] = useState(false);
 
   // members list and their data
   const [showListModal, setShowListModal] = useState(false);
@@ -23,6 +22,8 @@ const CommunityDetailsPage = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
+
+  const [showPostForm, setShowPostForm] = useState(false);
 
   const userId = localStorage.getItem("id");
 
@@ -37,7 +38,6 @@ const CommunityDetailsPage = () => {
     try {
       const res = await axios.get(`/community-posts/${id}`);
       setPosts(res.data);
-      // console.log(res.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
@@ -59,28 +59,23 @@ const CommunityDetailsPage = () => {
     fetchPosts();
   }, [id, userId]);
 
-  const loggedInUserRole = localStorage.getItem("role"); // Get logged-in user's role
+  const loggedInUserRole = localStorage.getItem("role");
   const navigate = useNavigate();
 
   const handleProfileClick = (profileId, role, expertId) => {
-    console.log(profileId, role, expertId);
-
     if (profileId === userId) {
-      // Navigate to the logged-in user's profile based on their role
       if (role === "expert") {
         navigate("/expert/profile");
       } else {
         navigate("/main/profile");
       }
     } else if (role === "expert" && expertId) {
-      // If clicking an expert's profile, navigate correctly based on the logged-in user's role
       if (loggedInUserRole === "expert") {
-        navigate(`/expert/experts/${expertId}`); // Expert viewing another expert
+        navigate(`/expert/experts/${expertId}`);
       } else {
-        navigate(`/main/experts/${expertId}`); // Pet owner viewing an expert
+        navigate(`/main/experts/${expertId}`);
       }
     } else {
-      // If clicking on a pet owner, navigate based on the logged-in user's role
       if (loggedInUserRole === "expert") {
         navigate(`/expert/feeds/${profileId}`);
       } else {
@@ -151,8 +146,6 @@ const CommunityDetailsPage = () => {
         `/community-posts/${postId}/comment/${commentId}`
       );
       const updatedPost = res.data;
-
-      // 🔁 Update post with new comment list + author populated
       setSelectedPost(updatedPost);
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -187,28 +180,27 @@ const CommunityDetailsPage = () => {
   if (!community) return <p className="p-4">Loading...</p>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
       <img
         src={community.image}
         alt={community.name}
-        className="w-full h-64 object-cover rounded mb-4"
+        className="w-full h-40 sm:h-64 object-cover rounded mb-4"
       />
-      <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-2">{community.name}</h1>
       <p className="text-gray-700 mb-2">{community.description}</p>
       <p className="text-sm text-gray-500 mb-4">
         👥 {community.members.length}{" "}
         {community.members.length === 1 ? "member" : "members"}
       </p>
-      <div className="flex items-center mb-3">
-        <h2 className="text-lg font-semibold ">Members:</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center mb-3 gap-2">
+        <h2 className="text-lg font-semibold">Members:</h2>
         <button
           onClick={() => {
             setListType("Members");
             setListData(community.members || []);
             setShowListModal(true);
-            // console.log(community.members);
           }}
-          className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 ml-3"
+          className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 sm:ml-3"
         >
           See Members
         </button>
@@ -218,7 +210,7 @@ const CommunityDetailsPage = () => {
         <div className="mb-6">
           <button
             onClick={() => setShowPostForm((prev) => !prev)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 w-full sm:w-auto"
           >
             {showPostForm ? "Cancel" : "Create Post"}
           </button>
@@ -226,7 +218,7 @@ const CommunityDetailsPage = () => {
           {showPostForm && (
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="bg-white shadow-md p-6 rounded mt-4 space-y-4"
+              className="bg-white shadow-md p-4 sm:p-6 rounded mt-4 space-y-4"
             >
               <textarea
                 {...register("content", { required: true })}
@@ -255,12 +247,17 @@ const CommunityDetailsPage = () => {
           )}
         </div>
       )}
-
+      {/* members list */}
       {showListModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-[90%] max-w-md max-h-[80vh] p-6 overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-2">
+          {/* Prevent background scroll when modal is open */}
+          {(() => {
+            document.body.style.overflow = "hidden";
+            return null;
+          })()}
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs sm:max-w-md max-h-[80vh] p-4 sm:p-6 overflow-hidden">
             <div className="flex flex-col h-full">
-              <h2 className="text-2xl font-semibold text-center border-b pb-3 capitalize">
+              <h2 className="text-xl sm:text-2xl font-semibold text-center border-b pb-3 capitalize">
                 {listType}
               </h2>
 
@@ -308,7 +305,10 @@ const CommunityDetailsPage = () => {
               </div>
 
               <button
-                onClick={() => setShowListModal(false)}
+                onClick={() => {
+                  setShowListModal(false);
+                  document.body.style.overflow = "";
+                }}
                 className="mt-4 w-full py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
               >
                 Close
@@ -320,13 +320,15 @@ const CommunityDetailsPage = () => {
 
       {/* community posts */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Community Posts</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4">
+          Community Posts
+        </h2>
         <div className="flex flex-col items-center">
           {posts.length > 0 ? (
             posts.map((post) => (
               <div
                 key={post?._id}
-                className="bg-white w-1/2 shadow-md rounded-lg overflow-hidden mb-6"
+                className="bg-white w-full max-w-xl shadow-md rounded-lg overflow-hidden mb-6"
               >
                 {/* Post Header */}
                 <div className="p-4 flex items-center space-x-4">
@@ -379,7 +381,7 @@ const CommunityDetailsPage = () => {
                   <img
                     src={post?.image}
                     alt="Post"
-                    className="w-full h-[500px] object-cover"
+                    className="w-full h-auto max-h-80 sm:max-h-[400px] md:max-h-[550px] object-contain bg-gray-100"
                   />
                 )}
 

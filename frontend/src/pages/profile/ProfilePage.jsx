@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { LoaderCircle } from "lucide-react";
 
@@ -20,6 +20,22 @@ const ProfilePage = () => {
   const [userPets, setUserPets] = useState([]);
   const [selectedPet, setSelectedPet] = useState(null);
   const [showPetModal, setShowPetModal] = useState(false);
+
+  //full post view modal
+  const [showFullPostModal, setShowFullPostModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  // Prevent background scroll when any modal is open
+  useEffect(() => {
+    if (showModal || showListModal || showPetModal || showFullPostModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal, showListModal, showPetModal, showFullPostModal]);
 
   const fetchList = async (type) => {
     try {
@@ -119,27 +135,41 @@ const ProfilePage = () => {
 
   //  Handle Viewing Full Post
   const handleViewPost = (post) => {
-    navigate(`${post._id}`, { state: post });
+    setSelectedPost(post);
+    setShowFullPostModal(true);
+  };
+
+  // handle delete post
+  const handleDeletePost = async () => {
+    if (!selectedPost) return;
+    try {
+      await axios.delete(`/post/${selectedPost._id}`);
+      setPosts(posts.filter((p) => p._id !== selectedPost._id));
+      setShowFullPostModal(false);
+      setSelectedPost(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
 
   if (!user)
     return <p className="text-center text-gray-500">Loading profile...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-2 sm:p-6">
       {/* Profile Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-8">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-8 w-full">
           <img
             src={user?.profilePic}
             alt="Profile"
             className="w-24 h-24 rounded-full border"
           />
-          <div>
+          <div className="text-center sm:text-left w-full">
             <h1 className="text-2xl font-bold">{user.fullName}</h1>
             <p className="text-gray-600">@{user.username}</p>
             <p className="text-gray-500">{user.bio || "No bio available"}</p>
-            <div className="flex space-x-4 mt-2">
+            <div className="flex flex-wrap justify-center sm:justify-start space-x-4 mt-2">
               <span>
                 <span className="font-bold">{posts.length || 0}</span>
                 &nbsp;&nbsp;
@@ -166,7 +196,7 @@ const ProfilePage = () => {
         </div>
         <button
           onClick={() => navigate("edit")}
-          className="bg-gray-200 text-black px-4 py-1 rounded-md hover:bg-gray-300"
+          className="bg-gray-200 text-black px-4 py-1 rounded-md hover:bg-gray-300 w-full sm:w-auto whitespace-nowrap"
         >
           Edit Profile
         </button>
@@ -175,15 +205,15 @@ const ProfilePage = () => {
       {/*  Create Post Button (Opens Modal) */}
       <button
         onClick={() => setShowModal(true)}
-        className="bg-green-600 text-white px-4 py-2 rounded mt-6 hover:bg-green-700"
+        className="bg-green-600 text-white px-4 py-2 rounded mt-6 hover:bg-green-700 w-full sm:w-auto"
       >
         Create Post
       </button>
 
       {/*  Post Creation Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-xs sm:max-w-md">
             <h2 className="text-2xl font-bold mb-4">Create a Post</h2>
             <form onSubmit={handleAddPost}>
               <input
@@ -199,7 +229,7 @@ const ProfilePage = () => {
                 accept="image/*"
                 className="w-full px-4 py-2 border rounded mb-2"
               />
-              <div className="flex justify-end space-x-3">
+              <div className="flex flex-col sm:flex-row justify-end sm:space-x-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -228,8 +258,8 @@ const ProfilePage = () => {
 
       {/* show following followers list model */}
       {showListModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-[90%] max-w-md max-h-[80vh] p-6 overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs sm:max-w-md max-h-[80vh] p-4 sm:p-6 overflow-hidden">
             <div className="flex flex-col h-full">
               <h2 className="text-2xl font-semibold text-center border-b pb-3 capitalize">
                 {listType}
@@ -268,7 +298,6 @@ const ProfilePage = () => {
                         />
                         <p className="font-medium text-sm">{person.fullName}</p>
                       </div>
-                      {/* You can add follow/unfollow or view profile button here */}
                     </div>
                   ))
                 ) : (
@@ -316,8 +345,8 @@ const ProfilePage = () => {
       )}
       {/* my pets show full modal */}
       {showPetModal && selectedPet && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-2">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-xs sm:max-w-md w-full">
             <h2 className="text-xl font-semibold mb-2">{selectedPet.name}</h2>
             <img
               src={selectedPet.photos?.[0] || "https://via.placeholder.com/300"}
@@ -352,7 +381,7 @@ const ProfilePage = () => {
 
       {/* User Posts (Opens Full Post on Click) */}
       <h3 className="mt-6 text-lg font-semibold">Your Posts</h3>
-      <div className="grid grid-cols-3 gap-2 mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div
@@ -367,16 +396,48 @@ const ProfilePage = () => {
                     : "https://via.placeholder.com/200"
                 }
                 alt="Post"
-                className="w-70 h-70 object-cover rounded-md"
+                className="w-full aspect-square object-cover rounded-md"
               />
             </div>
           ))
         ) : (
-          <p className="text-gray-500 col-span-3 text-center">No posts yet.</p>
+          <p className="text-gray-500 col-span-2 sm:col-span-3 text-center">
+            No posts yet.
+          </p>
         )}
       </div>
 
-      <Outlet />
+      {showFullPostModal && selectedPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 p-2">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-xs sm:max-w-md md:max-w-lg">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 break-words">
+              {selectedPost.caption}
+            </h2>
+            <img
+              src={selectedPost.photos[0]}
+              alt="Post"
+              className="w-full aspect-square sm:aspect-[4/3] object-cover rounded-md mb-4"
+            />
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <button
+                onClick={() => {
+                  setShowFullPostModal(false);
+                  setSelectedPost(null);
+                }}
+                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full sm:w-auto"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleDeletePost}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full sm:w-auto"
+              >
+                Delete Post
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

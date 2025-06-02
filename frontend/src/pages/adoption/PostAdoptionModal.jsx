@@ -77,13 +77,11 @@ const PostAdoptionModal = ({ onClose, onSubmit }) => {
     petFormData.append("isRehomed", "true");
 
     try {
-      // First create the pet with file upload
       setisloading(true);
       const petRes = await axios.post("/addPetWithFile", petFormData);
       const petId = petRes.data.data._id;
       setisloading(false);
 
-      // Now post for adoption
       const adoptionPayload = {
         petId,
         postedBy: userId,
@@ -98,9 +96,17 @@ const PostAdoptionModal = ({ onClose, onSubmit }) => {
     }
   };
 
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-xs sm:max-w-md md:max-w-lg p-4 sm:p-6">
         {/* Step 1: Choose option */}
         {step === "choose" && (
           <div className="space-y-4 text-center">

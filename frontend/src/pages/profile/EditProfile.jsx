@@ -52,15 +52,19 @@ const EditProfile = () => {
     }
   };
 
+  const handleCancel = () => {
+    navigate("/main/profile");
+  };
+
   return user ? (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
+    <div className="max-w-lg mx-auto p-2 sm:p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-bold mb-4 text-center">Edit Profile</h2>
       <form onSubmit={handleSubmit}>
         <div className="flex justify-center mb-4">
           <img
             src={previewImage}
             alt="Profile Preview"
-            className="w-24 h-24 rounded-full border"
+            className="w-24 h-24 rounded-full border object-cover"
           />
         </div>
         <label className="block font-semibold">Profile Picture</label>
@@ -86,19 +90,28 @@ const EditProfile = () => {
           className="w-full px-2 py-1 border rounded mb-3"
         ></textarea>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md w-full"
-        >
-          {isloading ? (
-            <div className="flex items-center justify-center">
-              <LoaderCircle className="animate-spin size-5" />
-              <span className="ml-1.5"> Please wait</span>
-            </div>
-          ) : (
-            "Save Changes"
-          )}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="bg-gray-400 text-white px-4 py-2 rounded-md w-full sm:w-auto hover:bg-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md w-full sm:w-auto"
+          >
+            {isloading ? (
+              <div className="flex items-center justify-center">
+                <LoaderCircle className="animate-spin size-5" />
+                <span className="ml-1.5"> Please wait</span>
+              </div>
+            ) : (
+              "Save Changes"
+            )}
+          </button>
+        </div>
       </form>
     </div>
   ) : (

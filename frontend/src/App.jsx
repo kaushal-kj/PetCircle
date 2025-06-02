@@ -12,12 +12,11 @@ import FeedPage from "./pages/feed/FeedPage";
 import PrivateRoutes from "./hooks/PrivateRoutes";
 import ProfilePage from "./pages/profile/ProfilePage";
 import EditProfile from "./pages/profile/EditProfile";
-import FullPostView from "./pages/profile/FullPostView";
 
 import ExpertDashboard from "./pages/expertPages/ExpertDashboard";
 import ExpertProfile from "./pages/expertPages/ExpertProfile";
 import EditExpertProfile from "./pages/expertPages/EditExpertProfile";
-import FullPostExpert from "./pages/expertPages/FullPostExpert";
+
 import ResetPassword from "./pages/common/ResetPassword";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import ViewExpertProfile from "./pages/expert/ViewExpertProfile";
@@ -100,7 +99,6 @@ function App() {
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="profile/edit" element={<EditProfile />} />
-            <Route path="profile/:id" element={<FullPostView />} />
           </Route>
           {/* expert routes */}
           <Route path="/expert" element={<ExpertDashboard />}>
@@ -109,7 +107,7 @@ function App() {
             <Route path="pets" element={<PetsPage />} />
             <Route path="profile" element={<ExpertProfile />} />
             <Route path="profile/edit" element={<EditExpertProfile />} />
-            <Route path="profile/:id" element={<FullPostExpert />} />
+
             <Route path="experts/:expertId" element={<ViewExpertProfile />} />
             <Route path="communities" element={<CommunitiesPage />} />
             <Route path="communities/:id" element={<CommunityDetailsPage />} />

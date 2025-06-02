@@ -4,49 +4,54 @@ import { MdDelete } from "react-icons/md";
 const AdoptionCard = ({ pet, onDelete }) => {
   const isEmail =
     typeof pet.contactInfo === "string" && pet.contactInfo.includes("@");
-  const loggedInUserId = localStorage.getItem("id"); // Get current user ID
-  const isOwner = pet.postedBy?._id === loggedInUserId; // Check ownership
+  const loggedInUserId = localStorage.getItem("id");
+  const isOwner = pet.postedBy?._id === loggedInUserId;
 
   return (
     <div
-      className={`bg-white rounded shadow-md p-4 transition-all ${
+      className={`bg-white rounded shadow-md p-2 sm:p-4 transition-all ${
         isOwner ? "border-l-4 border-blue-500" : ""
       }`}
     >
       <img
         src={pet.pet?.photos || "https://via.placeholder.com/300"}
         alt={pet.pet?.name}
-        className="w-full h-48 object-cover rounded"
+        className="w-full aspect-[4/3] object-cover rounded"
       />
-      <div className="mt-4 space-y-1">
-        <div className="flex justify-between items-start">
-          <h2 className="text-lg font-bold">{pet.pet?.name}</h2>
+      <div className="mt-3 sm:mt-4 space-y-1">
+        <div className="flex justify-between items-start gap-2">
+          <h2 className="text-base sm:text-lg font-bold truncate">
+            {pet.pet?.name}
+          </h2>
           {isOwner && (
             <button
               onClick={onDelete}
               className="text-red-500 hover:text-red-700"
+              aria-label="Delete"
             >
-              <MdDelete className="text-2xl cursor-pointer" />
+              <MdDelete className="text-2xl sm:text-2xl cursor-pointer" />
             </button>
           )}
         </div>
-        <p>
+        <p className="text-sm sm:text-base">
           <strong>Breed:</strong> {pet.pet?.breed}
         </p>
-        <p>
+        <p className="text-sm sm:text-base">
           <strong>Age:</strong> {pet.pet?.age}{" "}
           {pet.pet?.age === 1 ? "year" : "years"}
         </p>
         {pet.pet?.weight && (
-          <p>
+          <p className="text-sm sm:text-base">
             <strong>Weight:</strong> {pet.pet?.weight}
           </p>
         )}
-        <p className="text-gray-700 mt-2">{pet?.message}</p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-gray-700 mt-2 text-sm sm:text-base break-words">
+          {pet?.message}
+        </p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">
           Posted by: {pet?.postedBy?.username}
         </p>
-        <div className="flex items-center mt-1">
+        <div className="flex items-center mt-1 text-sm sm:text-sm break-all">
           {isEmail ? (
             <>
               <span>📧</span>

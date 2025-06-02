@@ -64,6 +64,18 @@ const PetsPage = () => {
     setShowModal(true);
   };
 
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal]);
+
   // Handle image preview
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -119,8 +131,8 @@ const PetsPage = () => {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">My Pets</h1>
+    <div className="p-4 sm:p-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">My Pets</h1>
       <button
         onClick={() => openModal()}
         className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-300 mb-6"
@@ -141,7 +153,7 @@ const PetsPage = () => {
           <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {pets.length > 0 ? (
             pets.map((pet) => (
               <div
@@ -151,15 +163,17 @@ const PetsPage = () => {
                 <img
                   src={pet.photos.length > 0 ? pet.photos[0] : DEFAULT_PHOTO}
                   alt={pet.name}
-                  className="w-32 h-32 rounded-full object-cover border"
+                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border"
                 />
-                <h2 className="text-xl font-bold mt-3">{pet.name}</h2>
+                <h2 className="text-lg sm:text-xl font-bold mt-3">
+                  {pet.name}
+                </h2>
                 <p className="text-gray-600">{pet.breed}</p>
                 <p className="text-gray-500">Age: {pet.age} years</p>
                 <p className="text-gray-500">
                   Weight: {pet.weight || "N/A"} kg
                 </p>
-                <p className="text-gray-500">
+                <p className="text-gray-500 text-center">
                   Medical History: {pet.medicalHistory || "N/A"}
                 </p>
 
@@ -193,9 +207,9 @@ const PetsPage = () => {
 
       {/* Modal for Adding/Editing Pet */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl font-bold mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md mx-2 p-4 sm:p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">
               {editMode ? "Edit Pet" : "Add a New Pet"}
             </h2>
 
@@ -257,7 +271,7 @@ const PetsPage = () => {
               <img
                 src={previewImage}
                 alt="Preview"
-                className="w-32 h-32 object-cover border rounded-md mx-auto mt-2"
+                className="w-24 h-24 sm:w-32 sm:h-32 object-cover border rounded-md mx-auto mt-2"
               />
 
               <div className="flex justify-end mt-4 space-x-3">

@@ -95,9 +95,9 @@ const ChatBox = ({ currentUserId, receiver }) => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-white">
+    <div className="flex flex-col w-full max-w-full sm:max-w-2xl h-full bg-white sm:mx-auto overflow-x-hidden">
       {/* Header */}
-      <div className="p-4 bg-gray-50 flex items-center gap-3 sticky top-0 z-10 shadow-md">
+      <div className="p-2 sm:p-4 bg-gray-50 flex items-center gap-3 sticky top-0 z-10 shadow-md">
         <img
           src={receiver.profilePic || "/default-avatar.png"}
           alt="avatar"
@@ -112,7 +112,7 @@ const ChatBox = ({ currentUserId, receiver }) => {
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100 space-y-3">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-6 py-2 sm:py-4 bg-gray-100 space-y-3">
         {messages.map((msg, i) => {
           const isSender = msg.senderId === currentUserId;
           const isLastMsg = i === messages.length - 1;
@@ -122,7 +122,7 @@ const ChatBox = ({ currentUserId, receiver }) => {
               className={`flex ${isSender ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm relative ${
+                className={`max-w-[70vw] sm:max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm relative ${
                   isSender
                     ? "bg-blue-500 text-white rounded-br-none"
                     : "bg-white text-gray-800 rounded-bl-none"
@@ -152,7 +152,7 @@ const ChatBox = ({ currentUserId, receiver }) => {
       </div>
 
       {/* Input bar */}
-      <div className="p-4 bg-white flex items-center gap-3 sticky bottom-0 z-10 shadow-md">
+      <div className="p-2 sm:p-2 bg-white flex items-center gap-2 sm:gap-3 sticky bottom-0 z-10 shadow-md">
         <div className="relative">
           <button
             type="button"
@@ -187,7 +187,7 @@ const ChatBox = ({ currentUserId, receiver }) => {
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-400"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
         />
         <button
           onClick={handleSend}

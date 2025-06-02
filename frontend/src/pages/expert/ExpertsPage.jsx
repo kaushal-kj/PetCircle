@@ -36,46 +36,46 @@ const ExpertsPage = () => {
     );
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-        Meet Our Experts
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {experts.map((expert) => {
-          const expertName = expert.user?.fullName || "Unknown Expert";
-          const profilePic = expert.user?.profilePic || "/default-avatar.png";
-          const specialization = expert.expertise || "Not specified";
-          const isVerified = expert.isVerified;
+    <div className="container mx-auto px-2 sm:px-6 py-6">
+    <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 mb-6 sm:mb-8">
+      Meet Our Experts
+    </h2>
+    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
+      {experts.map((expert) => {
+        const expertName = expert.user?.fullName || "Unknown Expert";
+        const profilePic = expert.user?.profilePic || "/default-avatar.png";
+        const specialization = expert.expertise || "Not specified";
+        const isVerified = expert.isVerified;
 
-          return (
-            <div
-              key={expert._id}
-              className="bg-white border rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer"
-              onClick={() => navigate(`${expert._id}`)}
-            >
-              <div className="relative">
-                <img
-                  src={profilePic}
-                  alt={expertName}
-                  className="w-full h-40 object-cover"
-                />
-              </div>
-              <div className="p-4 text-center">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {expertName}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">{specialization}</p>
-              </div>
-              <div className="bg-gray-100 p-3 text-center">
-                <button className="w-full py-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
-                  View Profile
-                </button>
-              </div>
+        return (
+          <div
+            key={expert._id}
+            className="bg-white border rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 cursor-pointer flex flex-col h-full"
+            onClick={() => navigate(`${expert._id}`)}
+          >
+            <div className="relative">
+              <img
+                src={profilePic}
+                alt={expertName}
+                className="w-full aspect-[1/1] object-cover"
+              />
             </div>
-          );
-        })}
-      </div>
+            <div className="p-4 text-center flex-1 flex flex-col justify-between">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                {expertName}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">{specialization}</p>
+            </div>
+            <div className="bg-gray-100 p-3 text-center">
+              <button className="w-full py-2 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+                View Profile
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
+  </div>
   );
 };
 

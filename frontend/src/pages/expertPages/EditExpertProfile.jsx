@@ -56,7 +56,7 @@ const EditExpertProfile = () => {
     return <p className="text-center text-gray-500">Loading profile...</p>;
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-md">
+    <div className="max-w-lg mx-auto p-2 sm:p-6 bg-white shadow-lg rounded-md">
       <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
       <form onSubmit={handleUpdate}>
         {/* Full Name */}
@@ -105,20 +105,29 @@ const EditExpertProfile = () => {
           className="w-full px-4 py-2 border rounded mb-2"
         />
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {isloading ? (
-            <div className="flex items-center">
-              <LoaderCircle className="animate-spin size-5" />
-              <span className="ml-1.5"> Please wait</span>
-            </div>
-          ) : (
-            "Save Changes"
-          )}
-        </button>
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-full sm:w-auto"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
+          >
+            {isloading ? (
+              <div className="flex items-center justify-center">
+                <LoaderCircle className="animate-spin size-5" />
+                <span className="ml-1.5"> Please wait</span>
+              </div>
+            ) : (
+              "Save Changes"
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );

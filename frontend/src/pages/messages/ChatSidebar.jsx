@@ -78,19 +78,19 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
   const isUserOnline = (userId) => onlineUsers.includes(userId);
 
   return (
-    <div className="w-[95%] bg-white h-[90%] shadow-md overflow-y-auto">
+    <div className="w-full sm:w-[300px] max-w-xs h-full bg-white shadow-md overflow-y-auto flex flex-col">
       {/* Search bar */}
-      <div className="p-4">
+      <div className="p-4 ">
         <input
           type="text"
           placeholder="Search users..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-base"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       {/* filtered user list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto ">
         {sortedUsers.map((user) => (
           <div
             key={user._id}
@@ -98,7 +98,7 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
               onSelectUser(user);
               setSearchTerm("");
             }}
-            className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-100"
+            className="flex items-center gap-4 px-3 sm:px-6 py-3 sm:py-4 cursor-pointer hover:bg-gray-100 transition"
           >
             {/* Profile Pic with Online Dot */}
             <div className="relative">
@@ -107,7 +107,7 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
                   user.profilePic || "https://i.pravatar.cc/150?u=" + user._id
                 }
                 alt={user.fullName}
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
               />
               {isUserOnline(user._id) && (
                 <span className="absolute bottom-0 right-0 block w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
@@ -115,18 +115,18 @@ const ChatSidebar = ({ currentUserId, onSelectUser, onlineUsers }) => {
             </div>
 
             {/* User Info */}
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 min-w-0">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold">{user.fullName}</span>
-                <span className="text-xs text-gray-500">
-                  {/* {getLastSeenTime(user)} */}
+                <span className="text-sm font-semibold truncate">
+                  {user.fullName}
+                </span>
+                <span className="text-xs text-gray-500 ml-2">
                   {user.lastMessage && user.lastMessageTime
                     ? moment(user.lastMessageTime).format("hh:mm A")
                     : ""}
                 </span>
               </div>
-              <span className="text-sm text-gray-500 truncate">
-                {/* {getLastMessagePreview(user, currentUserId)} */}
+              <span className="text-xs sm:text-sm text-gray-500 truncate">
                 {user.lastMessageSender === currentUserId
                   ? `You: ${user.lastMessage?.slice(0, 20)}${
                       user.lastMessage?.length > 20 ? "..." : ""

@@ -137,118 +137,110 @@ const FeedPage = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Feeds</h1>
+    <div className="w-full max-w-xl mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-6">
+    <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Feeds</h1>
 
-      <div className="space-y-8">
-        {posts.length > 0 ? (
-          posts.map((post) => (
+    <div className="space-y-6 sm:space-y-8">
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <div
+            key={post._id}
+            className="bg-white shadow-md rounded-lg overflow-hidden"
+          >
+            {/* Post Header */}
             <div
-              key={post._id}
-              className="bg-white shadow-md rounded-lg overflow-hidden"
+              className="p-3 sm:p-4 flex items-center space-x-3 sm:space-x-4 cursor-pointer"
+              onClick={() =>
+                handleProfileClick(
+                  post.author?._id,
+                  post.author?.role,
+                  post.author?.expertProfile,
+                  loggedInUserRole
+                )
+              }
             >
-              {/*  Post Header (Fixing Bug) */}
-              <div
-                className="p-4 flex items-center space-x-4"
-                onClick={() =>
-                  handleProfileClick(
-                    post.author?._id,
-                    post.author?.role,
-                    post.author?.expertProfile,
-                    loggedInUserRole
-                  )
-                }
-              >
-                {/* <Link
-                  to={`${post.author?._id}`}
-                  className="flex items-center space-x-2"
-                > */}
-                <img
-                  src={
-                    post.author?.profilePic || "https://via.placeholder.com/50"
-                  }
-                  alt="User"
-                  className="w-10 h-10 rounded-full cursor-pointer"
-                />
-                <div>
-                  <p className="font-bold cursor-pointer">
-                    {post.author?.username}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {format(post.createdAt)}
-                  </p>
-                </div>
-                {/* </Link> */}
-              </div>
-
-              {/* Post Image */}
               <img
                 src={
-                  post.photos.length > 0
-                    ? post.photos[0]
-                    : "https://via.placeholder.com/300"
+                  post.author?.profilePic || "https://via.placeholder.com/50"
                 }
-                alt="Post"
-                className="w-full h-[550px] object-cover"
+                alt="User"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full"
               />
-
-              {/* Post Actions (Like, Comment, Share) */}
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex space-x-2">
-                  <button onClick={() => toggleLike(post._id)}>
-                    {post.likes.includes(userId) ? (
-                      <FaHeart className="text-red-500 text-2xl" />
-                    ) : (
-                      <FaRegHeart className="text-2xl" />
-                    )}
-                  </button>
-                  <p className="mr-5 text-gray-600">
-                    {post.likes.length === 0 ? "" : post.likes.length}
-                  </p>
-                  <button onClick={() => openComments(post._id)}>
-                    <FaRegCommentDots className="text-2xl" />
-                  </button>
-                  <p className="mr-5 text-gray-600">
-                    {post.comments.length === 0 ? "" : post.comments.length}
-                  </p>
-                </div>
-                <button onClick={() => handleShare(post._id)}>
-                  <GiShare className="text-2xl" />
-                </button>
-              </div>
-
-              {/* Caption */}
-              <div className="p-4">
-                <p>
-                  <span className="font-bold">{post.author?.username}</span>{" "}
-                  {post.caption}
+              <div>
+                <p className="font-bold">{post.author?.username}</p>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {format(post.createdAt)}
                 </p>
               </div>
-
-              {/* Comments Section (Only Opens When Clicked) */}
-              {/* Comment Modal */}
-              {openCommentPost === post._id && (
-                <CommentModal
-                  isOpen={true}
-                  closeModal={() => setOpenCommentPost(null)}
-                  comments={post.comments}
-                  commentText={commentText}
-                  setCommentText={setCommentText}
-                  handleComment={handleComment}
-                  handleDeleteComment={handleDeleteComment}
-                  postId={post._id}
-                  userId={userId}
-                  postImage={post.photos}
-                  post={post}
-                />
-              )}
             </div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-center">No posts available.</p>
-        )}
-      </div>
+
+            {/* Post Image */}
+            <img
+              src={
+                post.photos.length > 0
+                  ? post.photos[0]
+                  : "https://via.placeholder.com/300"
+              }
+              alt="Post"
+              className="w-full h-52 sm:h-80 md:h-[400px] lg:h-[550px] object-cover"
+            />
+
+            {/* Post Actions */}
+            <div className="p-3 sm:p-4 flex items-center justify-between">
+              <div className="flex space-x-2">
+                <button onClick={() => toggleLike(post._id)}>
+                  {post.likes.includes(userId) ? (
+                    <FaHeart className="text-red-500 text-xl sm:text-2xl" />
+                  ) : (
+                    <FaRegHeart className="text-xl sm:text-2xl" />
+                  )}
+                </button>
+                <p className="mr-3 sm:mr-5 text-gray-600 text-sm">
+                  {post.likes.length === 0 ? "" : post.likes.length}
+                </p>
+                <button onClick={() => openComments(post._id)}>
+                  <FaRegCommentDots className="text-xl sm:text-2xl" />
+                </button>
+                <p className="mr-3 sm:mr-5 text-gray-600 text-sm">
+                  {post.comments.length === 0 ? "" : post.comments.length}
+                </p>
+              </div>
+              <button onClick={() => handleShare(post._id)}>
+                <GiShare className="text-xl sm:text-2xl" />
+              </button>
+            </div>
+
+            {/* Caption */}
+            <div className="p-3 sm:p-4">
+              <p className="text-sm sm:text-base">
+                <span className="font-bold">{post.author?.username}</span>{" "}
+                {post.caption}
+              </p>
+            </div>
+
+            {/* Comments Section */}
+            {openCommentPost === post._id && (
+              <CommentModal
+                isOpen={true}
+                closeModal={() => setOpenCommentPost(null)}
+                comments={post.comments}
+                commentText={commentText}
+                setCommentText={setCommentText}
+                handleComment={handleComment}
+                handleDeleteComment={handleDeleteComment}
+                postId={post._id}
+                userId={userId}
+                postImage={post.photos}
+                post={post}
+              />
+            )}
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-500 text-center">No posts available.</p>
+      )}
     </div>
+  </div>
   );
 };
 

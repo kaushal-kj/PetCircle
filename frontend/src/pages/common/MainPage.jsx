@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
-  FaHome,
-  FaPaw,
-  FaUsers,
-  FaHandHoldingHeart,
-  FaUserMd,
-  FaTrophy,
-} from "react-icons/fa";
+import { FaPaw, FaUsers, FaHandHoldingHeart, FaUserMd } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { MdGridOn } from "react-icons/md";
 import axios from "axios";
 import { FaMessage } from "react-icons/fa6";
+import { HiMenu } from "react-icons/hi";
 
 const MainPage = () => {
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-
   const isMainPage = location.pathname === "/main";
-
   const userId = localStorage.getItem("id");
   const [user, setUser] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   useEffect(() => {
     if (userId) {
       axios
@@ -33,101 +26,205 @@ const MainPage = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    // Prevent background scroll when sidebar is open on mobile
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
+
   const handleLogout = () => {
-    //  Clear user session
     localStorage.clear();
-    //  Redirect to login page
     navigate("/login");
   };
 
+  const sidebarLinks = [
+    {
+      to: "feeds",
+      icon: <MdGridOn size={22} />,
+      label: "Feeds",
+    },
+    {
+      to: "pets",
+      icon: <FaPaw size={22} />,
+      label: "My Pets",
+    },
+    {
+      to: "communities",
+      icon: <FaUsers size={22} />,
+      label: "Communities",
+    },
+    {
+      to: "messages",
+      icon: <FaMessage size={22} />,
+      label: "Messages",
+    },
+    {
+      to: "adoptions",
+      icon: <FaHandHoldingHeart size={22} />,
+      label: "Adoptions",
+    },
+    {
+      to: "experts",
+      icon: <FaUserMd size={22} />,
+      label: "Experts",
+    },
+  ];
+
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Sidebar */}
-      <div
-        className={`bg-gray-900 min-h-screen fixed text-white w-64 p-4 transform transition-transform duration-200 ease-in-out `}
-      >
-        <h2 className="text-2xl font-bold mb-6">PetCircle</h2>
-        <nav>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                to="feeds"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <MdGridOn className="mr-4 ml-1" /> Feeds
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="pets"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaPaw className="mr-4 ml-1" /> My Pets
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="communities"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaUsers className="mr-4 ml-1" /> Communities
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="messages"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaMessage className="mr-4 ml-1" /> Messages
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="adoptions"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaHandHoldingHeart className="mr-4 ml-1" /> Adoptions
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="experts"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
-              >
-                <FaUserMd className="mr-4 ml-1" /> Experts
-              </Link>
-            </li>
+      {/* Top navbar for mobile */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-gray-900 flex items-center justify-between px-4 py-3">
+        <div className="flex items-center">
+          <button
+            className="text-white focus:outline-none mr-2"
+            onClick={() => setSidebarOpen((open) => !open)}
+            aria-label="Toggle sidebar"
+          >
+            <HiMenu size={28} />
+          </button>
+          <span className="text-xl text-white font-bold">PetCircle</span>
+        </div>
+        <Link to="profile">
+          <img
+            src={user?.profilePic || "https://via.placeholder.com/150"}
+            alt="Profile"
+            className="w-8 h-8 rounded-full border-2 border-white"
+          />
+        </Link>
+      </div>
+
+      {/* Sidebar for desktop */}
+      <div className="hidden md:flex flex-col bg-gray-900 text-white w-64 min-h-screen fixed top-0 left-0 z-30 py-4">
+        <div className="flex items-center mb-6 px-4">
+          <span className="text-2xl font-bold">PetCircle</span>
+        </div>
+        <nav className="flex-1 w-full">
+          <ul className="space-y-2">
+            {sidebarLinks.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className="flex items-center p-2 hover:bg-gray-800 rounded transition-colors"
+                >
+                  <span className="mr-4 ml-1">{link.icon}</span>
+                  <span className="ml-3">{link.label}</span>
+                </Link>
+              </li>
+            ))}
             <li>
               <Link
                 to="profile"
-                className="flex items-center p-2 hover:bg-gray-800 rounded"
+                className="flex items-center p-2 hover:bg-gray-800 rounded transition-colors"
               >
-                {/* <FaUserMd className="mr-2" /> */}
                 <img
                   src={user?.profilePic || "https://via.placeholder.com/150"}
                   alt="Profile"
-                  className="w-6 h-6 mr-3 rounded-full "
+                  className="w-6 h-6 ml-1 rounded-full mr-3"
                 />
-                Profile
+                <span className="ml-3">Profile</span>
               </Link>
             </li>
             <li>
               <button
                 onClick={handleLogout}
-                className="w-full flex text-red-400 items-center p-2 hover:bg-gray-800 rounded"
+                className="w-full flex items-center p-2 hover:bg-gray-800 rounded text-red-400 transition-colors"
               >
-                <FiLogOut className="mr-4 ml-1" /> Logout
+                <FiLogOut className="mr-4 ml-2" />
+                <span className="ml-3">Logout</span>
               </button>
             </li>
           </ul>
         </nav>
       </div>
 
+      {/* Sidebar Drawer for mobile */}
+      {sidebarOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-transparent bg-opacity-40 z-40"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+          {/* Drawer */}
+          <div className="fixed top-0 left-0 z-50 h-full w-56 bg-gray-900 text-white flex flex-col py-4 transition-transform duration-200">
+            <div className="flex items-center justify-between mb-6 px-4">
+              <span className="text-2xl font-bold">PetCircle</span>
+              <button
+                className="text-white text-2xl focus:outline-none"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+              >
+                &times;
+              </button>
+            </div>
+            <nav className="flex-1 w-full">
+              <ul className="space-y-2">
+                {sidebarLinks.map((link) => (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      className="flex items-center p-2 hover:bg-gray-800 rounded transition-colors"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <span className="mr-4 ml-1">{link.icon}</span>
+                      <span className="ml-3">{link.label}</span>
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    to="profile"
+                    className="flex items-center p-2 hover:bg-gray-800 rounded transition-colors"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <img
+                      src={
+                        user?.profilePic || "https://via.placeholder.com/150"
+                      }
+                      alt="Profile"
+                      className="w-6 h-6 ml-1 rounded-full mr-3"
+                    />
+                    <span className="ml-3">Profile</span>
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center p-2 hover:bg-gray-800 rounded text-red-400 transition-colors"
+                  >
+                    <FiLogOut className="mr-4 ml-2" />
+                    <span className="ml-3">Logout</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </>
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 p-8 ml-60">
+      <div
+        className={`flex-1 transition-all duration-200 ${
+          sidebarOpen ? "md:ml-64" : "md:ml-64"
+        } p-4 md:p-8`}
+        style={{
+          marginTop: window.innerWidth < 768 ? "56px" : "0px",
+          pointerEvents:
+            sidebarOpen && window.innerWidth < 768 ? "none" : "auto",
+          userSelect: sidebarOpen && window.innerWidth < 768 ? "none" : "auto",
+        }}
+      >
         {isMainPage ? (
           <>
-            {" "}
             <h1 className="text-3xl font-bold mb-6">Welcome to PetCircle!</h1>
             <p className="text-lg text-gray-700">
               Your go-to platform for all things pets.
