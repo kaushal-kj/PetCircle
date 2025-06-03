@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import navLogo from "../../assets/logo1.png";
 
 const Navbar = () => {
   return (
@@ -11,7 +12,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center">
               <img
                 className="h-8 w-auto"
-                src="/src/assets/logo1.png" // Replace with your logo path
+                src={navLogo} // Replace with your logo path
                 alt="PetCircle Logo"
               />
               <span className="ml-2 text-xl font-semibold text-gray-800">
